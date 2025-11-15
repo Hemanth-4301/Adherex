@@ -62,7 +62,7 @@ const UserDashBoard = () => {
 
   const fetchAlertStatus = async (id, userRole) => {
     try {
-      const response = await axios.get(`http://localhost:8080/getById/${id}`);
+      const response = await axios.get(`https://adherex-sm-api.onrender.com/getById/${id}`);
       if (response.status === 200) {
         const alertValue = response.data.alert;
         setAlertStatus(alertValue);
@@ -84,7 +84,7 @@ const UserDashBoard = () => {
   const handleAlert = async () => {
     if (!pid) return;
     try {
-      const response = await axios.put(`http://localhost:8080/setAlert/${pid}`);
+      const response = await axios.put(`https://adherex-sm-api.onrender.com/setAlert/${pid}`);
       if (response.status === 200) {
         setAlertStatus(true);
         localStorage.setItem("alert", "true");
@@ -99,7 +99,7 @@ const UserDashBoard = () => {
   const handleClearAlert = async () => {
     if (!pid) return;
     try {
-      const response = await axios.put(`http://localhost:8080/clearAlert/${pid}`);
+      const response = await axios.put(`https://adherex-sm-api.onrender.com/clearAlert/${pid}`);
       if (response.status === 200) {
         setAlertStatus(false);
         setShowAlertModal(false);
