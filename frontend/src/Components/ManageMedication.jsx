@@ -224,30 +224,45 @@ const ManageMedication = () => {
       </div>
 
       {/* Medication Table */}
-      <div className="table-responsive shadow-sm rounded">
-        <table className="table table-striped table-bordered table-hover mb-0">
-          <thead className="table-dark">
+      <div className="table-responsive shadow-sm rounded" style={{
+        maxWidth: '100%',
+        overflowX: 'auto'
+      }}>
+        <table className="table table-striped table-bordered table-hover mb-0" style={{
+          minWidth: '800px',
+          fontSize: 'clamp(0.875rem, 1vw, 1rem)'
+        }}>
+          <thead className="table-dark" style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10
+          }}>
             <tr>
-              <th className="text-nowrap">Name</th>
-              <th className="text-nowrap">Quantity</th>
-              <th className="text-nowrap">Doctor</th>
-              <th className="text-nowrap">Timing</th>
-              <th className="text-center text-nowrap">Actions</th>
+              <th className="text-nowrap px-3 py-3" style={{ minWidth: '150px' }}>Medication Name</th>
+              <th className="text-nowrap px-3 py-3" style={{ minWidth: '100px' }}>Quantity</th>
+              <th className="text-nowrap px-3 py-3" style={{ minWidth: '150px' }}>Doctor</th>
+              <th className="text-nowrap px-3 py-3" style={{ minWidth: '150px' }}>Timing</th>
+              <th className="text-center text-nowrap px-3 py-3" style={{ minWidth: '120px' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {medications.length > 0 ? (
               medications.map((med) => (
                 <tr key={med._id}>
-                  <td className="text-nowrap">{med.tableName}</td>
-                  <td className="text-center">{med.tabletQty}</td>
-                  <td className="text-nowrap">{med.doctor}</td>
-                  <td><span className="badge bg-info text-dark">{med.timing}</span></td>
-                  <td className="text-center text-nowrap">
+                  <td className="text-nowrap px-3 py-2" style={{ fontWeight: '500' }}>{med.tableName}</td>
+                  <td className="text-center px-3 py-2">{med.tabletQty}</td>
+                  <td className="text-nowrap px-3 py-2">{med.doctor}</td>
+                  <td className="px-3 py-2">
+                    <span className="badge bg-info text-dark" style={{ fontSize: '0.9rem', padding: '0.4rem 0.6rem' }}>
+                      {med.timing}
+                    </span>
+                  </td>
+                  <td className="text-center text-nowrap px-3 py-2">
                     <button
                       className="btn btn-outline-primary btn-sm me-2"
                       onClick={() => handleEdit(med)}
                       title="Edit"
+                      style={{ padding: '0.4rem 0.8rem' }}
                     >
                       <FaEdit />
                     </button>
@@ -255,6 +270,7 @@ const ManageMedication = () => {
                       className="btn btn-outline-danger btn-sm"
                       onClick={() => handleDelete(med._id)}
                       title="Delete"
+                      style={{ padding: '0.4rem 0.8rem' }}
                     >
                       <FaTrash />
                     </button>
@@ -263,7 +279,7 @@ const ManageMedication = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="text-center text-muted py-4">
+                <td colSpan={5} className="text-center text-muted py-4" style={{ fontSize: '1rem' }}>
                   No medications found. Add your first medication above.
                 </td>
               </tr>
