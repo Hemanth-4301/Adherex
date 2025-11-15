@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { baseUrl } from "../App";
-import { ToastContainer, toast } from "react-toastify";
+import { baseUrl } from "../config";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./MentalSupport.css";
 
@@ -11,7 +11,7 @@ const MentalSupport = () => {
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const patientId = sessionStorage.getItem("pid");
+  const patientId = localStorage.getItem("pid");
 
   useEffect(() => {
     setResources([
@@ -36,6 +36,15 @@ const MentalSupport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!prompt.trim()) return;
+    
+    console.log('MentalSupport - patientId:', patientId);
+    console.log('MentalSupport - prompt:', prompt);
+    
+    // Validate patient ID
+    if (!patientId || patientId === 'undefined' || patientId === 'null') {
+      toast.error("Please login to use this feature!");
+      return;
+    }
 
     const userMessage = { role: "user", text: prompt };
     setMessages((prev) => [...prev, userMessage]);
@@ -43,19 +52,31 @@ const MentalSupport = () => {
     setLoading(true);
 
     try {
+      console.log(`Sending request to: ${baseUrl}/api/gemini/medication/ask`);
+      console.log('Request payload:', { prompt, pid: patientId });
+      
       const res = await axios.post(`${baseUrl}/api/gemini/medication/ask`, {
         prompt,
         pid: patientId,
       });
 
+      console.log('AI response received:', res.data);
+      
       const aiMessage = {
         role: "ai",
         text: res.data.aiResponse || "No response from AI.",
       };
       setMessages((prev) => [...prev, aiMessage]);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to get AI response!");
+      console.error('Error getting AI response:', err);
+      console.error('Error response:', err.response?.data);
+      const errorMessage = err.response?.data?.message || err.message || "Failed to get AI response!";
+      toast.error(errorMessage);
+      // Add error message to chat
+      setMessages((prev) => [...prev, {
+        role: "ai",
+        text: `Sorry, I encountered an error: ${errorMessage}. Please make sure the backend server is running and try again.`
+      }]);
     } finally {
       setLoading(false);
     }
@@ -89,7 +110,6 @@ const MentalSupport = () => {
 
   return (
     <div className="container mt-4">
-      <ToastContainer position="top-center" autoClose={2000} />
       <h3 className="mb-4 text-center">🧠 Mental Support Chat</h3>
 
       {/* Chat Box */}
@@ -161,6 +181,35 @@ const MentalSupport = () => {
           ))}
         </div>
       </div>
+      
+      <style>
+        {`
+          @media (min-width: 1200px) {
+            .container {
+              max-width: 1200px;
+            }
+            
+            .chat-box {
+              height: 75vh;
+            }
+          }
+          
+          @media (min-width: 1600px) {
+            .container {
+              max-width: 1400px;
+            }
+            
+            .chat-box {
+              height: 80vh;
+            }
+            
+            .bubble-text {
+              font-size: 1.05rem;
+              padding: 14px 18px;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

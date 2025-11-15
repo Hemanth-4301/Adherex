@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { baseUrl } from "../App";
+import { baseUrl } from "../config";
 import {
   FaSave,
   FaEdit,
@@ -12,7 +12,7 @@ import {
   FaNotesMedical,
   FaUserCircle,
 } from "react-icons/fa";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -27,20 +27,31 @@ const Profile = () => {
     careTakerEmail: "",
   });
   const [editing, setEditing] = useState(false);
-  const [role, setRole] = useState(sessionStorage.getItem("role") || "");
-  const patientId = sessionStorage.getItem("pid");
+  const [role, setRole] = useState(localStorage.getItem("role") || "");
+  const patientId = localStorage.getItem("pid");
 
   useEffect(() => {
     const fetchPatient = async () => {
+      console.log('Profile - patientId from session:', patientId);
+      console.log('Profile - role from session:', role);
+      
+      // Don't fetch if no patient ID
+      if (!patientId || patientId === 'undefined' || patientId === 'null') {
+        console.warn('No valid patient ID in session');
+        toast.error('Please login to view profile');
+        return;
+      }
+      
       try {
-        const id = patientId || 1;
-        const res = await axios.get(`${baseUrl}/getById/${id}`);
+        console.log(`Fetching patient data: ${baseUrl}/getById/${patientId}`);
+        const res = await axios.get(`${baseUrl}/getById/${patientId}`);
+        console.log('Patient data fetched:', res.data);
         setPatient(res.data);
-        sessionStorage.setItem("pid", res.data.pid);
-        setRole(sessionStorage.getItem("role") || res.data.role);
+        setRole(localStorage.getItem("role") || res.data.role);
       } catch (err) {
+        console.error('Failed to fetch patient data:', err);
+        console.error('Error response:', err.response?.data);
         toast.error("Failed to fetch patient data!");
-        console.error(err);
       }
     };
     fetchPatient();
@@ -53,25 +64,30 @@ const Profile = () => {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`${baseUrl}/patients/update/${patient.pid}`, patient);
+      console.log('Updating profile...');
+      console.log('Patient data to update:', patient);
+      console.log(`API URL: ${baseUrl}/update/${patient._id}`);
+      
+      await axios.put(`${baseUrl}/update/${patient._id}`, patient);
+      console.log('Profile updated successfully');
       toast.success("Profile updated successfully!");
       setEditing(false);
     } catch (err) {
+      console.error('Error updating profile:', err);
+      console.error('Error response:', err.response?.data);
       toast.error("Error updating profile!");
-      console.error(err);
     }
   };
 
-  const canEdit = role === "caretaker"; // Only caretakers can edit
+  const canEdit = true; // Allow all users to edit their profile
 
   return (
-    <div className="container ">
-      <ToastContainer />
+    <div className="container px-2 px-sm-3">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className="card shadow-lg p-4 mx-auto"
+        className="card shadow-lg p-3 p-sm-4 mx-auto"
         style={{
           maxWidth: "650px",
           borderRadius: "20px",
@@ -84,9 +100,9 @@ const Profile = () => {
             whileHover={{ scale: 1.1, rotate: 5 }}
             className="bg-primary text-white rounded-circle mx-auto d-flex align-items-center justify-content-center shadow"
             style={{
-              width: "100px",
-              height: "100px",
-              fontSize: "60px",
+              width: "clamp(80px, 15vw, 100px)",
+              height: "clamp(80px, 15vw, 100px)",
+              fontSize: "clamp(50px, 10vw, 60px)",
               border: "4px solid white",
             }}
           >
@@ -94,7 +110,7 @@ const Profile = () => {
           </motion.div>
         </div>
 
-        <h4 className="text-center mb-4 fw-bold text-gradient">
+        <h4 className="text-center mb-4 fw-bold text-gradient" style={{ fontSize: "clamp(1.25rem, 3vw, 1.5rem)" }}>
           Patient Profile
         </h4>
 
@@ -243,6 +259,30 @@ const Profile = () => {
             background: linear-gradient(45deg, #007bff, #6610f2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+          }
+          
+          @media (min-width: 1200px) {
+            .card {
+              max-width: 800px !important;
+              padding: 2.5rem !important;
+            }
+            
+            .form-control,
+            textarea {
+              font-size: 1.05rem;
+              padding: 0.75rem 1rem;
+            }
+            
+            .btn {
+              padding: 0.75rem 2rem;
+              font-size: 1.05rem;
+            }
+          }
+          
+          @media (min-width: 1600px) {
+            .card {
+              max-width: 900px !important;
+            }
           }
         `}
       </style>

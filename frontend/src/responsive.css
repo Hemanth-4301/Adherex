@@ -1,0 +1,368 @@
+/* ===================================
+   ADHEREX - RESPONSIVE STYLES
+   Complete Mobile & Tablet Support
+   =================================== */
+
+/* Mobile First Approach - Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Responsive Images */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Responsive Tables */
+table {
+  width: 100%;
+  overflow-x: auto;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  table {
+    font-size: 0.85rem;
+  }
+  
+  th, td {
+    padding: 0.5rem !important;
+  }
+}
+
+/* Form Controls Mobile Optimization */
+@media (max-width: 576px) {
+  .form-control,
+  .form-select,
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  .btn {
+    min-height: 44px; /* Touch-friendly button size */
+  }
+}
+
+/* Card Responsiveness */
+.card {
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .card {
+    border-radius: 12px !important;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Modal Responsiveness */
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem !important;
+    max-width: calc(100% - 1rem) !important;
+  }
+  
+  .modal-content {
+    border-radius: 12px !important;
+  }
+}
+
+/* Toast Notifications */
+@media (max-width: 576px) {
+  .Toastify__toast-container {
+    width: calc(100vw - 2rem) !important;
+    padding: 0 !important;
+    left: 1rem !important;
+    right: 1rem !important;
+  }
+  
+  .Toastify__toast {
+    margin-bottom: 0.5rem !important;
+    border-radius: 8px !important;
+  }
+}
+
+/* Dashboard Sidebar Mobile */
+@media (max-width: 767px) {
+  .sidebar-mobile-hide {
+    display: none !important;
+  }
+}
+
+/* Flexbox Grid Responsive */
+.flex-wrap {
+  flex-wrap: wrap !important;
+}
+
+@media (max-width: 768px) {
+  .flex-md-column {
+    flex-direction: column !important;
+  }
+  
+  .w-md-100 {
+    width: 100% !important;
+  }
+}
+
+/* Spacing Utilities Mobile */
+@media (max-width: 576px) {
+  .mt-mobile-2 { margin-top: 0.5rem !important; }
+  .mb-mobile-2 { margin-bottom: 0.5rem !important; }
+  .p-mobile-2 { padding: 0.5rem !important; }
+  .px-mobile-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+  .py-mobile-2 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+}
+
+/* Charts Responsiveness */
+.recharts-wrapper {
+  width: 100% !important;
+}
+
+@media (max-width: 576px) {
+  .recharts-wrapper {
+    font-size: 0.75rem !important;
+  }
+  
+  .recharts-legend-wrapper {
+    font-size: 0.7rem !important;
+  }
+}
+
+/* Progress Circles Mobile */
+@media (max-width: 576px) {
+  .CircularProgressbar {
+    max-width: 100px !important;
+    max-height: 100px !important;
+  }
+}
+
+/* Text Truncation for Mobile */
+.text-truncate-mobile {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+  .text-truncate-mobile {
+    max-width: 150px;
+  }
+}
+
+/* Landscape Mobile Optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+  .vh-100 {
+    min-height: 100vh !important;
+  }
+  
+  .modal-dialog {
+    margin: 1rem auto !important;
+  }
+}
+
+/* Touch Target Size (Accessibility) */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  .btn,
+  .nav-link {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Tablet Specific Styles */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .container {
+    max-width: 720px;
+  }
+  
+  h1 { font-size: 2.5rem; }
+  h2 { font-size: 2rem; }
+  h3 { font-size: 1.75rem; }
+}
+
+/* Large Laptop/Desktop Optimization */
+@media (min-width: 1200px) {
+  .container {
+    max-width: 1140px;
+  }
+  
+  /* Better spacing for large screens */
+  .card {
+    padding: 2rem !important;
+  }
+  
+  /* Optimize form layouts */
+  .col-lg-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+  }
+  
+  .col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+  }
+  
+  /* Better readability on large screens */
+  body {
+    font-size: 1.05rem;
+  }
+  
+  h1 { font-size: 3.5rem; }
+  h2 { font-size: 2.75rem; }
+  h3 { font-size: 2.25rem; }
+  h4 { font-size: 1.75rem; }
+}
+
+/* Extra Large Screens (1600px+) */
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1400px;
+  }
+  
+  /* More breathing room on XL screens */
+  .card {
+    padding: 2.5rem !important;
+    margin-bottom: 2rem;
+  }
+  
+  /* Larger but readable fonts */
+  h1 { font-size: 4rem; }
+  h2 { font-size: 3rem; }
+  h3 { font-size: 2.5rem; }
+  
+  /* Better button sizing */
+  .btn {
+    padding: 0.75rem 2rem !important;
+    font-size: 1.1rem !important;
+  }
+  
+  /* Form control sizing */
+  .form-control,
+  .form-select {
+    padding: 0.75rem 1rem;
+    font-size: 1.05rem;
+  }
+  
+  /* Optimal chart sizes */
+  .recharts-wrapper {
+    min-height: 500px;
+  }
+}
+
+/* Ultra-wide Screens (1920px+) */
+@media (min-width: 1920px) {
+  .container {
+    max-width: 1600px;
+  }
+  
+  /* Prevent content from stretching too wide */
+  .card {
+    max-width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  /* Content max-width to maintain readability */
+  .content-wrapper {
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+}
+
+/* High DPI Screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  img {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    font-size: 12pt;
+  }
+  
+  .container {
+    max-width: 100%;
+  }
+}
+
+/* Focus States for Accessibility */
+button:focus,
+a:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Reduce Motion for Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark Mode Support (Optional) */
+@media (prefers-color-scheme: dark) {
+  /* Add dark mode styles if needed in future */
+}
+
+/* Sticky Elements Mobile Fix */
+.sticky-top {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+}
+
+/* Safe Area Insets for Notched Devices (iPhone X+) */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .modal-content,
+  .card {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Horizontal Scrolling Fix */
+.overflow-x-hidden {
+  overflow-x: hidden !important;
+}
+
+/* Mobile Navigation Improvements */
+@media (max-width: 767px) {
+  .nav-link {
+    padding: 0.75rem 1rem !important;
+    font-size: 1rem !important;
+  }
+  
+  .navbar {
+    padding: 0.5rem 1rem !important;
+  }
+}

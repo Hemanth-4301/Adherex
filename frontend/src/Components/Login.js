@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { baseUrl } from "../App";
+import { baseUrl } from "../config";
 import loginBg from "../Assets/home123.jpg";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,9 +14,28 @@ const Login = () => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // Check if user is already logged in
+    const authDataStr = localStorage.getItem("adherex_auth");
+    if (authDataStr) {
+      try {
+        const authData = JSON.parse(authDataStr);
+        // Check if auth is still valid
+        if (Date.now() < authData.expiresAt) {
+          navigate("/userDashboard");
+          return;
+        } else {
+          // Auth expired, clear it
+          localStorage.clear();
+        }
+      } catch (err) {
+        console.error('Error checking auth:', err);
+        localStorage.clear();
+      }
+    }
+    
     const timer = setTimeout(() => setLoaded(true), 200); // fade-in delay
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
  const handleLogin = async (e) => {
   e.preventDefault();
@@ -27,16 +45,26 @@ const Login = () => {
     const response = await axios.post(`${baseUrl}/login`, { email, password });
     console.log("Login success:", response.data);
 
-   // ✅ Store each field individually in sessionStorage
-sessionStorage.setItem("role", response.data.role); // store role as well
-
-// Since patient details are nested inside "patient"
+   // ✅ Store authentication data in localStorage with expiration (2 days)
 const patient = response.data.patient;
+const authData = {
+  role: response.data.role,
+  pid: patient._id,
+  name: patient.name,
+  email: patient.email,
+  careTakerEmail: patient.careTakerEmail,
+  expiresAt: Date.now() + (2 * 24 * 60 * 60 * 1000) // 2 days in milliseconds
+};
 
-sessionStorage.setItem("pid", patient.pid);
-sessionStorage.setItem("name", patient.name);
-sessionStorage.setItem("email", patient.email);
-sessionStorage.setItem("careTakerEmail", patient.careTakerEmail);
+// Store in localStorage for persistent login
+localStorage.setItem("adherex_auth", JSON.stringify(authData));
+
+// Also set individual items for backward compatibility
+localStorage.setItem("role", response.data.role);
+localStorage.setItem("pid", patient._id);
+localStorage.setItem("name", patient.name);
+localStorage.setItem("email", patient.email);
+localStorage.setItem("careTakerEmail", patient.careTakerEmail);
 
 
 
@@ -46,7 +74,7 @@ sessionStorage.setItem("careTakerEmail", patient.careTakerEmail);
     });
 
     setTimeout(() => {
-      navigate("/userDashBoard");
+      navigate("/userDashboard");
     }, 2200);
   } catch (error) {
     console.error("Login failed:", error.response?.data || error.message);
@@ -80,13 +108,14 @@ sessionStorage.setItem("careTakerEmail", patient.careTakerEmail);
 
       {/* Glass card */}
       <div
-        className="p-4 text-white"
+        className="p-3 p-sm-4 text-white"
         style={{
           backdropFilter: "blur(15px)",
           background: "rgba(255,255,255,0.1)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
           borderRadius: "20px",
-          width: "350px",
+          width: "90%",
+          maxWidth: "400px",
           transform: loaded ? "translateY(0)" : "translateY(-50px)",
           opacity: loaded ? 1 : 0,
           transition: "all 1s ease",
@@ -193,9 +222,6 @@ sessionStorage.setItem("careTakerEmail", patient.careTakerEmail);
           }
         `}
       </style>
-
-      {/* Toast container */}
-      <ToastContainer />
     </div>
   );
 };

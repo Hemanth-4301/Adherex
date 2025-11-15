@@ -1,0 +1,3 @@
+# Python dependencies for monitoring system
+paho-mqtt==1.6.1
+pymongo==4.10.1

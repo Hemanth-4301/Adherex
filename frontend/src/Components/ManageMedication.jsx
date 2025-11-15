@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaEdit, FaSave, FaPlusCircle, FaTrash } from "react-icons/fa";
-import { baseUrl } from "../App";
+import { baseUrl } from "../config";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const ManageMedication = () => {
@@ -13,19 +13,30 @@ const ManageMedication = () => {
     doctor: "",
   });
   const [editingId, setEditingId] = useState(null);
-  const patientId = sessionStorage.getItem("pid");
-  const role = sessionStorage.getItem("role"); // 🔹 Get user role
+  const patientId = localStorage.getItem("pid");
+  const role = localStorage.getItem("role"); // 🔹 Get user role
 
   useEffect(() => {
-    if (patientId) fetchMedications();
+    console.log('ManageMedication - patientId from session:', patientId);
+    console.log('ManageMedication - role from session:', role);
+    if (patientId) {
+      fetchMedications();
+    } else {
+      console.error('No patient ID found in session!');
+    }
   }, [patientId]);
 
   const fetchMedications = async () => {
     try {
+      console.log(`Fetching medications for patient: ${patientId}`);
+      console.log(`API URL: ${baseUrl}/medications/get/patient/${patientId}`);
       const res = await axios.get(`${baseUrl}/medications/get/patient/${patientId}`);
+      console.log('Medications fetched:', res.data);
       setMedications(res.data);
     } catch (err) {
       console.error("Error fetching medications:", err);
+      console.error("Error response:", err.response?.data);
+      alert(`Failed to fetch medications: ${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -46,8 +57,13 @@ const ManageMedication = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    console.log('Submitting medication form...');
+    console.log('Patient ID:', patientId);
+    console.log('Form data:', form);
+    
     if (!patientId) {
-      alert("Patient not found in session.");
+      alert("Patient not found in session. Please login again.");
       return;
     }
 
@@ -57,18 +73,25 @@ const ManageMedication = () => {
       tabletConsumed: 0,
     };
 
+    console.log('Payload to send:', payload);
+
     try {
-      await axios.post(`${baseUrl}/medications/add/${patientId}`, payload);
+      console.log(`Posting to: ${baseUrl}/medications/add/${patientId}`);
+      const response = await axios.post(`${baseUrl}/medications/add/${patientId}`, payload);
+      console.log('Medication added successfully:', response.data);
       alert("Medication added successfully!");
       resetForm();
       fetchMedications();
     } catch (err) {
       console.error("Error adding medication:", err);
+      console.error("Error response:", err.response?.data);
+      alert(`Failed to add medication: ${err.response?.data?.message || err.message}`);
     }
   };
 
   const handleEdit = (med) => {
-    setEditingId(med.mid);
+    console.log('Editing medication:', med);
+    setEditingId(med._id);
     setForm({
       tableName: med.tableName,
       tabletQty: med.tabletQty,
@@ -89,17 +112,22 @@ const ManageMedication = () => {
       fetchMedications();
     } catch (err) {
       console.error("Error updating medication:", err);
+      alert(`Failed to update medication: ${err.response?.data?.message || err.message}`);
     }
   };
 
-  const handleDelete = async (mid) => {
+  const handleDelete = async (medicationId) => {
+    console.log('Attempting to delete medication with ID:', medicationId);
     if (window.confirm("Are you sure you want to delete this medication?")) {
       try {
-        await axios.delete(`${baseUrl}/medications/delete/${mid}`);
+        const response = await axios.delete(`${baseUrl}/medications/delete/${medicationId}`);
+        console.log('Delete response:', response.data);
         alert("Medication deleted successfully!");
         fetchMedications();
       } catch (err) {
         console.error("Error deleting medication:", err);
+        console.error('Error response:', err.response?.data);
+        alert(`Failed to delete medication: ${err.response?.data?.message || err.message}`);
       }
     }
   };
@@ -115,14 +143,14 @@ const ManageMedication = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-center mb-4">Manage Medication</h3>
+    <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
+      <h3 className="text-center mb-3 mb-md-4" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>Manage Medication</h3>
 
       {/* Add / Edit Form */}
-      <div className="card shadow-lg p-4 mb-5">
-        <h5 className="mb-3">{editingId ? "Edit Medication" : "Add New Medication"}</h5>
-        <form onSubmit={handleSubmit} className="row g-3">
-          <div className="col-md-4">
+      <div className="card shadow-lg p-3 p-sm-4 mb-4 mb-md-5">
+        <h5 className="mb-3" style={{ fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }}>{editingId ? "Edit Medication" : "Add New Medication"}</h5>
+        <form onSubmit={handleSubmit} className="row g-2 g-sm-3">
+          <div className="col-12 col-md-4">
             <label className="form-label">Tablet Name</label>
             <input
               type="text"
@@ -131,11 +159,10 @@ const ManageMedication = () => {
               value={form.tableName}
               onChange={handleInputChange}
               required
-              disabled={role === "patient"}
             />
           </div>
 
-          <div className="col-md-4">
+          <div className="col-12 col-md-4">
             <label className="form-label">Tablet Quantity</label>
             <input
               type="number"
@@ -144,11 +171,10 @@ const ManageMedication = () => {
               value={form.tabletQty}
               onChange={handleInputChange}
               required
-              disabled={role === "patient"}
             />
           </div>
 
-          <div className="col-md-4">
+          <div className="col-12 col-md-4">
             <label className="form-label">Doctor</label>
             <input
               type="text"
@@ -157,7 +183,6 @@ const ManageMedication = () => {
               value={form.doctor}
               onChange={handleInputChange}
               required
-              disabled={role === "patient"}
             />
           </div>
 
@@ -171,7 +196,6 @@ const ManageMedication = () => {
                   value={time}
                   checked={form.timing.includes(time)}
                   onChange={handleTimingChange}
-                  disabled={role === "patient"}
                 />
                 <label className="form-check-label">{time}</label>
               </div>
@@ -184,7 +208,6 @@ const ManageMedication = () => {
                 type="button"
                 className="btn btn-success px-4"
                 onClick={handleUpdate}
-                disabled={role === "patient"}
               >
                 <FaSave className="me-2" /> Update Medication
               </button>
@@ -192,7 +215,6 @@ const ManageMedication = () => {
               <button
                 type="submit"
                 className="btn btn-primary px-4"
-                disabled={role === "patient"}
               >
                 <FaPlusCircle className="me-2" /> Add Medication
               </button>
@@ -202,47 +224,47 @@ const ManageMedication = () => {
       </div>
 
       {/* Medication Table */}
-      <div className="table-responsive">
-        <table className="table table-striped table-bordered">
+      <div className="table-responsive shadow-sm rounded">
+        <table className="table table-striped table-bordered table-hover mb-0">
           <thead className="table-dark">
             <tr>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th>Doctor</th>
-              <th>Timing</th>
-              {role !== "patient" && <th>Actions</th>}
+              <th className="text-nowrap">Name</th>
+              <th className="text-nowrap">Quantity</th>
+              <th className="text-nowrap">Doctor</th>
+              <th className="text-nowrap">Timing</th>
+              <th className="text-center text-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
             {medications.length > 0 ? (
               medications.map((med) => (
-                <tr key={med.mid}>
-                  <td>{med.tableName}</td>
-                  <td>{med.tabletQty}</td>
-                  <td>{med.doctor}</td>
-                  <td>{med.timing}</td>
-                  {role !== "patient" && (
-                    <td>
-                      <button
-                        className="btn btn-outline-primary btn-sm me-2"
-                        onClick={() => handleEdit(med)}
-                      >
-                        <FaEdit />
-                      </button>
-                      <button
-                        className="btn btn-outline-danger btn-sm"
-                        onClick={() => handleDelete(med.mid)}
-                      >
-                        <FaTrash />
-                      </button>
-                    </td>
-                  )}
+                <tr key={med._id}>
+                  <td className="text-nowrap">{med.tableName}</td>
+                  <td className="text-center">{med.tabletQty}</td>
+                  <td className="text-nowrap">{med.doctor}</td>
+                  <td><span className="badge bg-info text-dark">{med.timing}</span></td>
+                  <td className="text-center text-nowrap">
+                    <button
+                      className="btn btn-outline-primary btn-sm me-2"
+                      onClick={() => handleEdit(med)}
+                      title="Edit"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      className="btn btn-outline-danger btn-sm"
+                      onClick={() => handleDelete(med._id)}
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={role === "patient" ? 4 : 5} className="text-center text-muted">
-                  No medications found.
+                <td colSpan={5} className="text-center text-muted py-4">
+                  No medications found. Add your first medication above.
                 </td>
               </tr>
             )}

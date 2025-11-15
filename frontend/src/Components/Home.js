@@ -8,9 +8,28 @@ const Home = () => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // Check if user is already logged in
+    const authDataStr = localStorage.getItem("adherex_auth");
+    if (authDataStr) {
+      try {
+        const authData = JSON.parse(authDataStr);
+        // Check if auth is still valid (not expired)
+        if (Date.now() < authData.expiresAt) {
+          navigate("/userDashboard");
+          return;
+        } else {
+          // Auth expired, clear it
+          localStorage.clear();
+        }
+      } catch (err) {
+        console.error('Error checking auth:', err);
+        localStorage.clear();
+      }
+    }
+    
     const timer = setTimeout(() => setLoaded(true), 200); // fade-in delay
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   const handleStart = () => {
     navigate("/login");
@@ -36,7 +55,7 @@ const Home = () => {
 
       {/* Glass card with animation */}
       <div
-        className={`text-center text-white p-5 rounded`}
+        className={`text-center text-white p-3 p-sm-4 p-md-5 rounded`}
         style={{
           backdropFilter: "blur(15px)",
           background: "rgba(255, 255, 255, 0.1)",
@@ -45,12 +64,14 @@ const Home = () => {
           transform: loaded ? "translateY(0)" : "translateY(-50px)",
           opacity: loaded ? 1 : 0,
           transition: "all 1s ease",
+          maxWidth: "90%",
+          width: "auto",
         }}
       >
         <h1
-          className="mb-4 fw-bold"
+          className="mb-3 mb-md-4 fw-bold"
           style={{
-            fontSize: "5rem",
+            fontSize: "clamp(2.5rem, 8vw, 5rem)",
             textShadow: "2px 2px 10px rgba(0,0,0,0.7)",
             animation: loaded ? "fadeIn 1.5s ease forwards" : "none",
           }}
@@ -58,13 +79,13 @@ const Home = () => {
         Adherex
         </h1>
         <button
-          className="btn btn-gradient btn-lg px-5 py-3 fw-bold"
+          className="btn btn-gradient btn-lg px-3 px-sm-4 px-md-5 py-2 py-md-3 fw-bold"
           onClick={handleStart}
           style={{
             background: "linear-gradient(90deg, #6a11cb, #2575fc)",
             border: "none",
             color: "#fff",
-            fontSize: "1.2rem",
+            fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
             transition: "all 0.4s ease",
             boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
           }}

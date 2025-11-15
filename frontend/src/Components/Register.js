@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { baseUrl } from "../App";
+import { baseUrl } from "../config";
 import bgImage from "../Assets/home123.jpg";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -60,13 +60,14 @@ const Register = () => {
 
       {/* Glass card */}
       <div
-        className="p-4 text-white"
+        className="p-3 p-sm-4 text-white"
         style={{
           backdropFilter: "blur(15px)",
           background: "rgba(255,255,255,0.1)",
           boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
           borderRadius: "20px",
-          width: "400px",
+          width: "90%",
+          maxWidth: "450px",
           transform: loaded ? "translateY(0)" : "translateY(-50px)",
           opacity: loaded ? 1 : 0,
           transition: "all 1s ease",

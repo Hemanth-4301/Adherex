@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
-import { ToastContainer } from 'react-bootstrap';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Home from './Components/Home';
 import Login from './Components/Login';
 import Register from './Components/Register';
@@ -12,18 +13,11 @@ import Profile from './Components/Profile';
 import MentalSupport from './Components/MentalSupport';
 
 
-
-
- export const baseUrl = "http://localhost:8080"; 
-
-
-
 function App() {
   return (
     <div className="App">
-      
-        <BrowserRouter>
-        <ToastContainer />
+      <BrowserRouter>
+        <ToastContainer position="top-center" autoClose={2000} />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />

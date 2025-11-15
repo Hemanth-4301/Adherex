@@ -10,12 +10,12 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { baseUrl } from "../App";
+import { baseUrl } from "../config";
 
 const ConsumedChart = () => {
   const [chartData, setChartData] = useState([]);
   const [medications, setMedications] = useState([]);
-  const patientId = sessionStorage.getItem("pid");
+  const patientId = localStorage.getItem("pid");
 
   // Expected times (in hours)
   const expectedTimes = {
@@ -25,15 +25,23 @@ const ConsumedChart = () => {
   };
 
   useEffect(() => {
-    if (patientId) fetchConsumedData();
+    console.log('ConsumedChart - patientId:', patientId);
+    if (patientId) {
+      fetchConsumedData();
+    } else {
+      console.error('No patient ID found in session!');
+    }
   }, [patientId]);
 
   const fetchConsumedData = async () => {
     try {
+      console.log(`Fetching consumed data: ${baseUrl}/consumed/bypatient/${patientId}`);
       const res = await axios.get(`${baseUrl}/consumed/bypatient/${patientId}`);
+      console.log('Consumed data fetched:', res.data);
       processData(res.data);
     } catch (err) {
       console.error("Error fetching data:", err);
+      console.error("Error response:", err.response?.data);
     }
   };
 
@@ -95,14 +103,19 @@ const ConsumedChart = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-center mb-4">Medication Consumption Chart</h3>
+    <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
+      <h3 className="text-center mb-3 mb-md-4" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>Medication Consumption Chart</h3>
 
       {chartData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer width="100%" height={window.innerWidth >= 1200 ? 500 : window.innerWidth >= 768 ? 450 : 400}>
           <LineChart
             data={chartData}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            margin={{ 
+              top: 20, 
+              right: window.innerWidth >= 1200 ? 50 : 30, 
+              left: window.innerWidth >= 1200 ? 30 : 20, 
+              bottom: 5 
+            }}
           >
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis

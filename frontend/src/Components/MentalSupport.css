@@ -1,7 +1,7 @@
 .chat-box {
   display: flex;
   flex-direction: column;
-  height: 70vh; /* slightly taller */
+  height: 70vh;
   border-radius: 15px;
   background-color: #f9fafc;
   overflow: hidden;
@@ -9,6 +9,7 @@
 
 .chat-header {
   border-bottom: 1px solid #dee2e6;
+  padding: 1rem;
 }
 
 .chat-messages {
@@ -20,6 +21,7 @@
   display: flex;
   flex-direction: column;
 }
+
 .chat-link {
   color: #0d6efd;
   text-decoration: underline;
@@ -29,7 +31,6 @@
 .chat-link:hover {
   color: #084298;
 }
-
 
 .chat-bubble {
   display: flex;
@@ -41,14 +42,14 @@
 
 .chat-bubble.user {
   align-self: flex-end;
-  margin-left: auto; /* ✅ push to right */
+  margin-left: auto;
   justify-content: flex-end;
-  text-align: right; /* ✅ align text to right */
+  text-align: right;
 }
 
 .chat-bubble.ai {
   align-self: flex-start;
-  margin-right: auto; /* ✅ stay on left */
+  margin-right: auto;
   justify-content: flex-start;
   text-align: left;
 }
@@ -75,10 +76,10 @@
   border-top-left-radius: 0;
 }
 
-
 .chat-input {
   background: #fff;
   border-top: 1px solid #dee2e6;
+  padding: 0.75rem 1rem;
 }
 
 .typing-indicator {
@@ -95,5 +96,64 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .chat-box {
+    height: calc(100vh - 120px);
+    border-radius: 10px;
+  }
+  
+  .chat-messages {
+    padding: 10px 12px;
+  }
+  
+  .chat-bubble {
+    max-width: 85%;
+    margin: 6px 0;
+  }
+  
+  .bubble-text {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  
+  .chat-input {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .chat-header {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .chat-box {
+    height: calc(100vh - 100px);
+    border-radius: 8px;
+  }
+  
+  .chat-messages {
+    padding: 8px 10px;
+  }
+  
+  .chat-bubble {
+    max-width: 90%;
+    margin: 5px 0;
+  }
+  
+  .bubble-text {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+  
+  .chat-input {
+    padding: 0.5rem;
+  }
+  
+  .typing-indicator {
+    font-size: 0.85rem;
   }
 }

@@ -2,22 +2,32 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { baseUrl } from "../App";
+import { baseUrl } from "../config";
 
 const ConsumedCount = () => {
   const [progressData, setProgressData] = useState([]);
-  const patientId = sessionStorage.getItem("pid");
+    const [medications, setMedications] = useState([]);
+  const [consumedData, setConsumedData] = useState([]);
+  const patientId = localStorage.getItem("pid");
 
   useEffect(() => {
-    if (patientId) fetchConsumedData();
+    console.log('ConsumedCount - patientId:', patientId);
+    if (patientId) {
+      fetchConsumedData();
+    } else {
+      console.error('No patient ID found in session!');
+    }
   }, [patientId]);
 
   const fetchConsumedData = async () => {
     try {
+      console.log(`Fetching consumed data: ${baseUrl}/consumed/bypatient/${patientId}`);
       const res = await axios.get(`${baseUrl}/consumed/bypatient/${patientId}`);
+      console.log('Consumed data fetched:', res.data);
       processData(res.data);
     } catch (err) {
       console.error("Error fetching data:", err);
+      console.error("Error response:", err.response?.data);
       setProgressData([]);
     }
   };
@@ -151,17 +161,18 @@ const ConsumedCount = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h3 className="text-center mb-4">Medication Consumption Progress</h3>
+    <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
+      <h3 className="text-center mb-3 mb-md-4" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>Medication Consumption Progress</h3>
 
       {progressData.length > 0 ? (
-        <div className="d-flex flex-wrap justify-content-center gap-4">
+        <div className="d-flex flex-wrap justify-content-center gap-3 gap-md-4">
           {progressData.map((item, index) => (
             <div
               key={index}
               className="text-center p-3 rounded-3"
               style={{
-                width: "220px",
+                width: "clamp(180px, 45vw, 220px)",
+                minWidth: "180px",
                 background: "#ffffff",
                 border: "1px solid #eee",
                 boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
@@ -181,7 +192,7 @@ const ConsumedCount = () => {
               {item.badges.length > 0 && renderBadges(item.badges)}
 
               {/* Progress Circle */}
-              <div style={{ width: "110px", height: "110px", margin: "0 auto" }}>
+              <div style={{ width: "clamp(90px, 20vw, 110px)", height: "clamp(90px, 20vw, 110px)", margin: "0 auto" }}>
                 <CircularProgressbar
                   value={item.percentage}
                   text={`${item.consumed}/${item.total}`}
@@ -223,6 +234,29 @@ const ConsumedCount = () => {
       ) : (
         <p className="text-center text-muted">No consumption data available.</p>
       )}
+      
+      <style>
+        {`
+          @media (min-width: 1200px) {
+            .container {
+              max-width: 1400px;
+            }
+            
+            /* Show 4 cards per row on large screens */
+            .d-flex.flex-wrap > div {
+              width: calc(25% - 1.5rem) !important;
+              min-width: 200px;
+            }
+          }
+          
+          @media (min-width: 1600px) {
+            /* Show 5 cards per row on extra large screens */
+            .d-flex.flex-wrap > div {
+              width: calc(20% - 1.5rem) !important;
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };
