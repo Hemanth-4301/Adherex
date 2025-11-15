@@ -116,12 +116,19 @@ const UserDashBoard = () => {
     <div className="d-flex" style={{ minHeight: "100vh", backgroundColor: "#f8f9fa", position: "relative" }}>
 
       {/* Mobile Header with Hamburger */}
-      <div className="d-md-none position-fixed w-100 bg-dark text-white p-3 d-flex justify-content-between align-items-center" style={{ zIndex: 1030, top: 0 }}>
-        <h5 className="mb-0 fw-bold">💊 Adherex</h5>
+      <div className="d-md-none position-fixed w-100 bg-dark text-white d-flex justify-content-between align-items-center" 
+        style={{ 
+          zIndex: 1030, 
+          top: 0,
+          padding: '0.75rem 1rem',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
+        }}>
+        <h5 className="mb-0 fw-bold" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>💊 Adherex</h5>
         <button 
-          className="btn btn-dark border-0" 
+          className="btn btn-link text-white border-0 p-2" 
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{ fontSize: "1.5rem" }}
+          style={{ fontSize: "1.5rem", lineHeight: 1 }}
+          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
         >
           {sidebarOpen ? <FaTimes /> : <FaBars />}
         </button>
@@ -149,59 +156,105 @@ const UserDashBoard = () => {
           zIndex: 1040,
           transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 0.3s ease-in-out",
+          paddingTop: "env(safe-area-inset-top, 1rem)",
         }}
       >
-        <h3 className="mb-4 text-center fw-bold d-none d-md-block">💊 Adherex</h3>
-        <div className="d-md-none mb-3 text-end">
-          <button className="btn btn-dark border-0" onClick={() => setSidebarOpen(false)}>
-            <FaTimes />
-          </button>
+        <h3 className="mb-4 text-center fw-bold d-none d-md-block" style={{ fontSize: 'clamp(1.25rem, 2vw, 1.5rem)' }}>💊 Adherex</h3>
+        
+        {/* Mobile: Title in sidebar */}
+        <div className="d-md-none mb-3">
+          <h4 className="text-center fw-bold mb-0" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.3rem)' }}>💊 Menu</h4>
         </div>
 
-       <ul className="nav flex-column text-start">
+       <ul className="nav flex-column text-start" style={{ flex: 1 }}>
   <li className="nav-item mb-2">
     <Link 
       to="/userDashboard/manageMedication" 
-      className="nav-link text-white"
+      className="nav-link text-white d-flex align-items-center"
       onClick={() => setSidebarOpen(false)}
+      style={{ 
+        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+        borderRadius: '8px',
+        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
+        transition: 'background 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+      onMouseLeave={(e) => e.target.style.background = 'transparent'}
     >
-      <FaPills className="me-2" /> Manage Medication
+      <FaPills className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
+      <span>Manage Medication</span>
     </Link>
   </li>
   <li className="nav-item mb-2">
     <Link 
       to="/userDashboard/consumedChart" 
-      className="nav-link text-white"
+      className="nav-link text-white d-flex align-items-center"
       onClick={() => setSidebarOpen(false)}
+      style={{ 
+        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+        borderRadius: '8px',
+        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
+        transition: 'background 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+      onMouseLeave={(e) => e.target.style.background = 'transparent'}
     >
-      <FaChartLine className="me-2" /> Consumed Chart
+      <FaChartLine className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
+      <span>Consumed Chart</span>
     </Link>
   </li>
   <li className="nav-item mb-2">
     <Link 
       to="/userDashboard/consumedCount" 
-      className="nav-link text-white"
+      className="nav-link text-white d-flex align-items-center"
       onClick={() => setSidebarOpen(false)}
+      style={{ 
+        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+        borderRadius: '8px',
+        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
+        transition: 'background 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+      onMouseLeave={(e) => e.target.style.background = 'transparent'}
     >
-      <FaCheckCircle className="me-2" /> Consumed Count
+      <FaCheckCircle className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
+      <span>Consumed Count</span>
     </Link>
   </li>
   <li className="nav-item mb-2">
     <Link 
       to="/userDashboard/mentalSupport" 
-      className="nav-link text-white"
+      className="nav-link text-white d-flex align-items-center"
       onClick={() => setSidebarOpen(false)}
+      style={{ 
+        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+        borderRadius: '8px',
+        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
+        transition: 'background 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+      onMouseLeave={(e) => e.target.style.background = 'transparent'}
     >
-      <FaBrain className="me-2" /> Ask AI for Mental Support
+      <FaBrain className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
+      <span>AI Mental Support</span>
     </Link>
   </li>
   <li className="nav-item mb-2">
     <Link 
       to="/userDashboard/profile" 
-      className="nav-link text-white"
+      className="nav-link text-white d-flex align-items-center"
       onClick={() => setSidebarOpen(false)}
+      style={{ 
+        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
+        borderRadius: '8px',
+        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
+        transition: 'background 0.2s'
+      }}
+      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
+      onMouseLeave={(e) => e.target.style.background = 'transparent'}
     >
-      <FaUser className="me-2" /> Profile
+      <FaUser className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
+      <span>Profile</span>
     </Link>
   </li>
           {role === "patient" && (
@@ -228,16 +281,25 @@ const UserDashBoard = () => {
 
       {/* Main Content */}
       <div 
-        className="flex-grow-1 p-2 p-sm-3 p-md-4 p-lg-4" 
+        className="flex-grow-1" 
         style={{ 
           backgroundColor: "#ffffff",
           marginLeft: "0",
           marginTop: "60px",
           width: "100%",
           maxWidth: "100%",
+          padding: "clamp(0.75rem, 2vw, 2rem)",
+          paddingBottom: "env(safe-area-inset-bottom, 1rem)",
         }}
       >
-        <Outlet />
+        <div style={{ 
+          marginLeft: "0",
+          width: "100%",
+          maxWidth: "100%",
+          overflowX: "hidden"
+        }}>
+          <Outlet />
+        </div>
       </div>
 
       {/* Responsive styles */}
