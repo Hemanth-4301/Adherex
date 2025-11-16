@@ -7,7 +7,7 @@ export const API_ENDPOINTS = {
   // Patient routes
   PATIENT_LOGIN: `${API_BASE_URL}/login`,
   PATIENT_REGISTER: `${API_BASE_URL}/register`,
-  PATIENT_PROFILE: (pid) => `${API_BASE_URL}/patient/${pid}`,
+  PATIENT_PROFILE: (pid) => `${API_BASE_URL}/getById/${pid}`,
   PATIENT_UPDATE: (pid) => `${API_BASE_URL}/updatePatient/${pid}`,
   SET_ALERT: (pid) => `${API_BASE_URL}/setAlert/${pid}`,
   CLEAR_ALERT: (pid) => `${API_BASE_URL}/clearAlert/${pid}`,
