@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 
 const ConsumedChart = () => {
   const [chartData, setChartData] = useState([]);
@@ -25,19 +25,21 @@ const ConsumedChart = () => {
   };
 
   useEffect(() => {
-    console.log('ConsumedChart - patientId:', patientId);
+    console.log("ConsumedChart - patientId:", patientId);
     if (patientId) {
       fetchConsumedData();
     } else {
-      console.error('No patient ID found in session!');
+      console.error("No patient ID found in session!");
     }
   }, [patientId]);
 
   const fetchConsumedData = async () => {
     try {
-      console.log(`Fetching consumed data: ${baseUrl}/consumed/bypatient/${patientId}`);
-      const res = await axios.get(`${baseUrl}/consumed/bypatient/${patientId}`);
-      console.log('Consumed data fetched:', res.data);
+      console.log(
+        `Fetching consumed data: ${API_ENDPOINTS.CONSUMED_GET(patientId)}`
+      );
+      const res = await axios.get(API_ENDPOINTS.CONSUMED_GET(patientId));
+      console.log("Consumed data fetched:", res.data);
       processData(res.data);
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -99,22 +101,38 @@ const ConsumedChart = () => {
     if (diff > 1 || diff < -1) fill = "#FF0000"; // too early/late
     else if (diff > 0.5 || diff < -0.5) fill = "#FFA500"; // slightly off
 
-    return <circle cx={cx} cy={cy} r={6} fill={fill} stroke="#000" strokeWidth={1} />;
+    return (
+      <circle cx={cx} cy={cy} r={6} fill={fill} stroke="#000" strokeWidth={1} />
+    );
   };
 
   return (
     <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
-      <h3 className="text-center mb-3 mb-md-4" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>Medication Consumption Chart</h3>
+      <h3
+        className="text-center mb-3 mb-md-4"
+        style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}
+      >
+        Medication Consumption Chart
+      </h3>
 
       {chartData.length > 0 ? (
-        <ResponsiveContainer width="100%" height={window.innerWidth >= 1200 ? 500 : window.innerWidth >= 768 ? 450 : 400}>
+        <ResponsiveContainer
+          width="100%"
+          height={
+            window.innerWidth >= 1200
+              ? 500
+              : window.innerWidth >= 768
+              ? 450
+              : 400
+          }
+        >
           <LineChart
             data={chartData}
-            margin={{ 
-              top: 20, 
-              right: window.innerWidth >= 1200 ? 50 : 30, 
-              left: window.innerWidth >= 1200 ? 30 : 20, 
-              bottom: 5 
+            margin={{
+              top: 20,
+              right: window.innerWidth >= 1200 ? 50 : 30,
+              left: window.innerWidth >= 1200 ? 30 : 20,
+              bottom: 5,
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
@@ -148,11 +166,9 @@ const ConsumedChart = () => {
             <Tooltip
               formatter={(value) =>
                 value
-                  ? `${Math.floor(value)}:${Math.round(
-                    (value % 1) * 60
-                  )
-                    .toString()
-                    .padStart(2, "0")}`
+                  ? `${Math.floor(value)}:${Math.round((value % 1) * 60)
+                      .toString()
+                      .padStart(2, "0")}`
                   : ""
               }
               labelFormatter={(label) => `Date: ${label}`}
@@ -167,13 +183,11 @@ const ConsumedChart = () => {
                     key={key}
                     type="monotone"
                     dataKey={key}
-                    stroke={[
-                      "#FFA500",
-                      "#1E90FF",
-                      "#32CD32",
-                      "#FF1493",
-                      "#00CED1",
-                    ][index % 5]}
+                    stroke={
+                      ["#FFA500", "#1E90FF", "#32CD32", "#FF1493", "#00CED1"][
+                        index % 5
+                      ]
+                    }
                     activeDot={renderCustomDot}
                     connectNulls={true}
                   />

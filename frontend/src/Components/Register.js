@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 import bgImage from "../Assets/home123.jpg";
 import ThemeToggle from "./ThemeToggle";
+import ParticlesBackground from "./ParticlesBackground";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import Loader from "./Loader";
+import { useTheme } from "../context/ThemeContext";
 
 const Register = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +29,7 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${baseUrl}/register`, {
+      const response = await axios.post(API_ENDPOINTS.PATIENT_REGISTER, {
         name,
         email,
         password,
@@ -54,10 +57,13 @@ const Register = () => {
   return (
     <div className="relative flex items-center justify-center min-h-screen overflow-hidden py-8">
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center z-0"
         style={{ backgroundImage: `url(${bgImage})` }}
       />
-      <div className="absolute inset-0 bg-black/60 dark:bg-black/75"></div>
+      <div className="absolute inset-0 bg-black/40 dark:bg-black/60 z-[1]"></div>
+      <div className="absolute inset-0 z-[2]">
+        <ParticlesBackground isDark={theme === "dark"} />
+      </div>
       <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
@@ -65,7 +71,7 @@ const Register = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="relative z-10 p-8 bg-white/10 dark:bg-black/30 backdrop-blur-xl
+        className="relative z-[20] p-8 bg-white/10 dark:bg-black/30 backdrop-blur-xl
                    border border-white/20 shadow-2xl rounded-2xl w-[90%] max-w-md"
       >
         <motion.h3

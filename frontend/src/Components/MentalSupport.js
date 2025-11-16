@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 import { toast } from "react-toastify";
 import {
   FaPaperPlane,
@@ -163,7 +163,7 @@ const MentalSupport = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${baseUrl}/api/gemini/medication/ask`, {
+      const res = await axios.post(API_ENDPOINTS.GEMINI_ASK, {
         prompt,
         pid: patientId,
       });
@@ -243,9 +243,9 @@ const MentalSupport = () => {
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4 md:p-6 space-y-6">
+    <div className="w-full h-full flex flex-col px-1 xs:px-2 sm:px-4 md:px-6 py-1 xs:py-2 sm:py-4">
       <h2
-        className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 
+        className="text-base xs:text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-center mb-2 xs:mb-3 sm:mb-4 
                    text-gray-900 dark:text-white"
       >
         🧠 AI Mental Support Chat
@@ -254,19 +254,19 @@ const MentalSupport = () => {
       {/* Chat Box */}
       <div
         className="bg-white dark:bg-[#171717] border border-gray-200 dark:border-gray-800 
-                    rounded-2xl shadow-lg overflow-hidden flex flex-col"
+                    rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg overflow-hidden flex flex-col flex-1"
         style={{
-          height: "calc(100vh - 300px)",
-          minHeight: "500px",
-          maxHeight: "700px",
+          height: "calc(100vh - 180px)",
+          maxHeight: "calc(100vh - 180px)",
+          minHeight: "350px",
         }}
       >
         {/* Chat Header */}
         <div
-          className="flex justify-between items-center px-4 md:px-6 py-4 
-                      border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0a0a0a]"
+          className="flex justify-between items-center px-2 sm:px-4 md:px-6 py-2 sm:py-3 
+                      border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-[#0a0a0a] flex-shrink-0"
         >
-          <h3 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 dark:text-white">
             Conversation
           </h3>
           <div className="flex gap-2">
@@ -274,34 +274,34 @@ const MentalSupport = () => {
             {isSpeaking && (
               <button
                 onClick={stopSpeaking}
-                className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm md:text-base
-                         bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm
+                         bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors shrink-0"
                 title="Stop speaking"
               >
                 <FaVolumeMute className="text-sm" />
-                <span className="hidden sm:inline">Stop</span>
+                <span className="hidden md:inline">Stop</span>
               </button>
             )}
             <button
               onClick={clearChat}
-              className="flex items-center gap-2 px-3 md:px-4 py-2 text-sm md:text-base
-                       bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+              className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm
+                       bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors shrink-0"
             >
               <FaTrash className="text-sm" />
-              <span className="hidden sm:inline">Clear</span>
+              <span className="hidden md:inline">Clear</span>
             </button>
           </div>
         </div>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-gray-50 dark:bg-[#0a0a0a]">
+        <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 space-y-2 sm:space-y-3 bg-gray-50 dark:bg-[#0a0a0a]">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <FaRobot className="text-6xl md:text-7xl text-gray-300 dark:text-gray-700 mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-base md:text-lg max-w-md">
+            <div className="flex flex-col items-center justify-center h-full text-center px-4">
+              <FaRobot className="text-4xl sm:text-5xl md:text-6xl text-gray-300 dark:text-gray-700 mb-3" />
+              <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-md">
                 Start a conversation with your AI support assistant 💬
                 <br />
-                <span className="text-sm">
+                <span className="text-xs sm:text-sm">
                   Ask about medications, mental health, or wellness tips
                 </span>
               </p>
@@ -311,35 +311,35 @@ const MentalSupport = () => {
           {messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`flex gap-3 ${
+              className={`flex gap-1.5 sm:gap-2 md:gap-3 ${
                 msg.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
               {msg.role === "ai" && (
                 <div
-                  className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-black dark:bg-white 
+                  className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-black dark:bg-white 
                               text-white dark:text-black rounded-full flex items-center justify-center"
                 >
-                  <FaRobot className="text-sm md:text-base" />
+                  <FaRobot className="text-xs sm:text-sm md:text-base" />
                 </div>
               )}
 
               <div
-                className={`max-w-[85%] md:max-w-[75%] lg:max-w-[65%] rounded-2xl px-4 py-3 
+                className={`max-w-[90%] sm:max-w-[85%] md:max-w-[75%] lg:max-w-[65%] rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3 
                             ${
                               msg.role === "user"
                                 ? "bg-black dark:bg-white text-white dark:text-black"
                                 : "bg-white dark:bg-[#171717] text-gray-900 dark:text-white border border-gray-200 dark:border-gray-800"
                             }`}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words flex-1">
+                <div className="flex items-start justify-between gap-1 sm:gap-2">
+                  <p className="text-xs sm:text-sm md:text-base leading-relaxed whitespace-pre-wrap break-words flex-1">
                     {formatMessageText(msg.text)}
                   </p>
                   {msg.role === "ai" && (
                     <button
                       onClick={() => speakText(msg.text)}
-                      className="flex-shrink-0 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 
+                      className="flex-shrink-0 p-1.5 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 
                                transition-colors text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white"
                       title="Read aloud"
                     >
@@ -351,26 +351,26 @@ const MentalSupport = () => {
 
               {msg.role === "user" && (
                 <div
-                  className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-black dark:bg-white 
+                  className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-black dark:bg-white 
                               text-white dark:text-black rounded-full flex items-center justify-center"
                 >
-                  <FaUser className="text-sm md:text-base" />
+                  <FaUser className="text-xs sm:text-sm md:text-base" />
                 </div>
               )}
             </div>
           ))}
 
           {loading && (
-            <div className="flex gap-3">
+            <div className="flex gap-1.5 sm:gap-2 md:gap-3">
               <div
-                className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 bg-black dark:bg-white 
+                className="flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 bg-black dark:bg-white 
                             text-white dark:text-black rounded-full flex items-center justify-center"
               >
-                <FaRobot className="text-sm md:text-base" />
+                <FaRobot className="text-xs sm:text-sm md:text-base" />
               </div>
               <div
                 className="bg-white dark:bg-[#171717] text-gray-900 dark:text-white 
-                            border border-gray-200 dark:border-gray-800 rounded-2xl px-4 py-3"
+                            border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-3 py-2 sm:px-4 sm:py-3"
               >
                 <div className="flex gap-2">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
@@ -392,17 +392,18 @@ const MentalSupport = () => {
         {/* Input Form */}
         <form
           onSubmit={handleSubmit}
-          className="p-4 md:p-6 border-t border-gray-200 dark:border-gray-800 
-                                                bg-white dark:bg-[#171717]"
+          className="p-2 sm:p-3 md:p-4 border-t border-gray-200 dark:border-gray-800 
+                     bg-white dark:bg-[#171717] flex-shrink-0"
         >
-          <div className="flex gap-2 md:gap-3">
+          <div className="flex gap-2">
             <input
               type="text"
-              className="flex-1 px-4 py-3 md:py-3.5 text-sm md:text-base bg-gray-50 dark:bg-[#0a0a0a] 
-                       text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-700 
-                       rounded-xl focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white 
+              className="flex-1 px-3 py-2.5 sm:px-3 sm:py-2.5 md:px-4 md:py-3 text-xs sm:text-sm md:text-base 
+                       bg-gray-50 dark:bg-[#0a0a0a] text-gray-900 dark:text-gray-100 
+                       border border-gray-300 dark:border-gray-700 rounded-lg sm:rounded-xl 
+                       focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-white 
                        placeholder:text-gray-500 dark:placeholder:text-gray-400"
-              placeholder="Ask about your medication or mental health..."
+              placeholder="Ask me anything..."
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               disabled={loading}
@@ -413,8 +414,8 @@ const MentalSupport = () => {
               type="button"
               onClick={startVoiceInput}
               disabled={loading}
-              className={`px-4 py-3 rounded-xl font-semibold transition-all 
-                       flex items-center gap-2 ${
+              className={`px-2.5 py-2.5 sm:px-2.5 sm:py-2.5 md:px-3 md:py-3 rounded-lg sm:rounded-xl font-semibold transition-all 
+                       flex items-center justify-center shrink-0 ${
                          isListening
                            ? "bg-red-600 hover:bg-red-700 text-white animate-pulse"
                            : "bg-gray-600 hover:bg-gray-700 text-white"
@@ -422,20 +423,21 @@ const MentalSupport = () => {
               title={isListening ? "Stop listening" : "Voice input"}
             >
               {isListening ? (
-                <FaStop className="text-sm md:text-base" />
+                <FaStop className="text-sm sm:text-sm md:text-base" />
               ) : (
-                <FaMicrophone className="text-sm md:text-base" />
+                <FaMicrophone className="text-sm sm:text-sm md:text-base" />
               )}
             </button>
             <button
               type="submit"
               disabled={loading || !prompt.trim()}
-              className="px-4 md:px-6 py-3 bg-black dark:bg-white text-white dark:text-black 
-                       rounded-xl font-semibold transition-all hover:opacity-90 
-                       disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-3 py-2.5 sm:px-4 sm:py-2.5 md:px-6 md:py-3 bg-black dark:bg-white 
+                       text-white dark:text-black rounded-lg sm:rounded-xl font-semibold 
+                       transition-all hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed 
+                       flex items-center justify-center gap-1 sm:gap-2 shrink-0"
             >
-              <FaPaperPlane className="text-sm md:text-base" />
-              <span className="hidden sm:inline">Send</span>
+              <FaPaperPlane className="text-sm sm:text-sm md:text-base" />
+              <span className="hidden md:inline">Send</span>
             </button>
           </div>
         </form>
@@ -444,26 +446,26 @@ const MentalSupport = () => {
       {/* Recommended Resources */}
       <div
         className="bg-white dark:bg-[#171717] border border-gray-200 dark:border-gray-800 
-                    rounded-2xl shadow-lg p-4 md:p-6"
+                    rounded-xl sm:rounded-2xl shadow-lg p-3 sm:p-4 md:p-6 mx-2 sm:mx-0"
       >
-        <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+        <h3 className="text-base sm:text-lg md:text-xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-white">
           🎧 Recommended Videos & Podcasts
         </h3>
-        <div className="space-y-3">
+        <div className="space-y-2 sm:space-y-3">
           {resources.map((res, idx) => (
             <a
               key={idx}
               href={res.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex justify-between items-center p-4 rounded-xl border border-gray-200 
-                       dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-[#0a0a0a] 
-                       transition-colors group"
+              className="flex justify-between items-center p-3 sm:p-4 rounded-lg sm:rounded-xl 
+                       border border-gray-200 dark:border-gray-800 hover:bg-gray-50 
+                       dark:hover:bg-[#0a0a0a] transition-colors group"
             >
-              <span className="text-sm md:text-base text-gray-900 dark:text-white group-hover:underline">
+              <span className="text-xs sm:text-sm md:text-base text-gray-900 dark:text-white group-hover:underline">
                 {res.title}
               </span>
-              <span className="text-2xl flex-shrink-0">
+              <span className="text-xl sm:text-2xl flex-shrink-0 ml-2">
                 {res.type === "video" ? "🎥" : "🎧"}
               </span>
             </a>

@@ -15,6 +15,7 @@ import {
 import axios from "axios";
 import { toast } from "react-toastify";
 import ThemeToggle from "./ThemeToggle";
+import { API_ENDPOINTS } from "../api";
 
 const UserDashBoard = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const UserDashBoard = () => {
   const handleAlert = async () => {
     if (!pid) return;
     try {
-      await axios.put(`https://adherex-sm-api.onrender.com/setAlert/${pid}`);
+      await axios.put(API_ENDPOINTS.SET_ALERT(pid));
       setAlertStatus(true);
       toast.success("Alert sent successfully!");
     } catch (error) {
@@ -76,7 +77,7 @@ const UserDashBoard = () => {
   const handleClearAlert = async () => {
     if (!pid) return;
     try {
-      await axios.put(`https://adherex-sm-api.onrender.com/clearAlert/${pid}`);
+      await axios.put(API_ENDPOINTS.CLEAR_ALERT(pid));
       setAlertStatus(false);
       setShowAlertModal(false);
       toast.success("Alert cleared successfully!");

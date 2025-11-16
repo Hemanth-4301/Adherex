@@ -2,7 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import homeBg from "../Assets/home123.jpg";
 import ThemeToggle from "./ThemeToggle";
+import ParticlesBackground from "./ParticlesBackground";
 import { motion } from "framer-motion";
+import { useTheme } from "../context/ThemeContext";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -36,16 +38,23 @@ const Home = () => {
     navigate("/login");
   };
 
+  const { theme } = useTheme();
+
   return (
     <div className="relative flex items-center justify-center min-h-screen overflow-hidden">
       {/* Background image - always visible */}
       <div
-        className="absolute inset-0 bg-cover bg-center"
+        className="absolute inset-0 bg-cover bg-center z-0"
         style={{ backgroundImage: `url(${homeBg})` }}
       />
 
       {/* Dark overlay */}
-      <div className="absolute inset-0 bg-black/60 dark:bg-black/75"></div>
+      <div className="absolute inset-0 bg-black/40 dark:bg-black/60 z-[1]"></div>
+
+      {/* Particles Background */}
+      <div className="absolute inset-0 z-[2]">
+        <ParticlesBackground isDark={theme === "dark"} />
+      </div>
 
       {/* Theme Toggle */}
       <div className="absolute top-6 right-6 z-50">
@@ -57,7 +66,7 @@ const Home = () => {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="relative z-10 text-center p-8 sm:p-12 md:p-16 rounded-2xl 
+        className="relative z-[20] text-center p-8 sm:p-12 md:p-16 rounded-2xl 
                    bg-white/10 dark:bg-black/30 backdrop-blur-xl border border-white/20 
                    shadow-2xl max-w-2xl mx-4"
       >

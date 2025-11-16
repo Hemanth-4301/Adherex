@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 import {
   FaSave,
   FaEdit,
@@ -36,7 +36,7 @@ const Profile = () => {
       }
 
       try {
-        const res = await axios.get(`${baseUrl}/getById/${patientId}`);
+        const res = await axios.get(API_ENDPOINTS.PATIENT_PROFILE(patientId));
         setPatient(res.data);
         setRole(localStorage.getItem("role") || res.data.role);
       } catch (err) {
@@ -53,7 +53,7 @@ const Profile = () => {
 
   const handleUpdate = async () => {
     try {
-      await axios.put(`${baseUrl}/update/${patient._id}`, patient);
+      await axios.put(API_ENDPOINTS.PATIENT_UPDATE(patient._id), patient);
       toast.success("Profile updated successfully!");
       setEditing(false);
     } catch (err) {

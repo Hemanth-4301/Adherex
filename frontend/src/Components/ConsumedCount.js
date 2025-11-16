@@ -2,28 +2,30 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 
 const ConsumedCount = () => {
   const [progressData, setProgressData] = useState([]);
-    const [medications, setMedications] = useState([]);
+  const [medications, setMedications] = useState([]);
   const [consumedData, setConsumedData] = useState([]);
   const patientId = localStorage.getItem("pid");
 
   useEffect(() => {
-    console.log('ConsumedCount - patientId:', patientId);
+    console.log("ConsumedCount - patientId:", patientId);
     if (patientId) {
       fetchConsumedData();
     } else {
-      console.error('No patient ID found in session!');
+      console.error("No patient ID found in session!");
     }
   }, [patientId]);
 
   const fetchConsumedData = async () => {
     try {
-      console.log(`Fetching consumed data: ${baseUrl}/consumed/bypatient/${patientId}`);
-      const res = await axios.get(`${baseUrl}/consumed/bypatient/${patientId}`);
-      console.log('Consumed data fetched:', res.data);
+      console.log(
+        `Fetching consumed data: ${API_ENDPOINTS.CONSUMED_GET(patientId)}`
+      );
+      const res = await axios.get(API_ENDPOINTS.CONSUMED_GET(patientId));
+      console.log("Consumed data fetched:", res.data);
       processData(res.data);
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -162,7 +164,12 @@ const ConsumedCount = () => {
 
   return (
     <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
-      <h3 className="text-center mb-3 mb-md-4" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>Medication Consumption Progress</h3>
+      <h3
+        className="text-center mb-3 mb-md-4"
+        style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}
+      >
+        Medication Consumption Progress
+      </h3>
 
       {progressData.length > 0 ? (
         <div className="d-flex flex-wrap justify-content-center gap-3 gap-md-4">
@@ -192,7 +199,13 @@ const ConsumedCount = () => {
               {item.badges.length > 0 && renderBadges(item.badges)}
 
               {/* Progress Circle */}
-              <div style={{ width: "clamp(90px, 20vw, 110px)", height: "clamp(90px, 20vw, 110px)", margin: "0 auto" }}>
+              <div
+                style={{
+                  width: "clamp(90px, 20vw, 110px)",
+                  height: "clamp(90px, 20vw, 110px)",
+                  margin: "0 auto",
+                }}
+              >
                 <CircularProgressbar
                   value={item.percentage}
                   text={`${item.consumed}/${item.total}`}
@@ -234,7 +247,7 @@ const ConsumedCount = () => {
       ) : (
         <p className="text-center text-muted">No consumption data available.</p>
       )}
-      
+
       <style>
         {`
           @media (min-width: 1200px) {

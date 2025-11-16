@@ -1,8 +1,15 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 import { toast } from "react-toastify";
-import { FaCamera, FaUpload, FaTimes, FaSpinner } from "react-icons/fa";
+import {
+  FaCamera,
+  FaUpload,
+  FaTimes,
+  FaSpinner,
+  FaVolumeUp,
+  FaVolumeMute,
+} from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "./Loader";
 
@@ -11,8 +18,42 @@ const MedicineScanner = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const fileInputRef = useRef(null);
   const patientId = localStorage.getItem("pid");
+
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    };
+  }, []);
+
+  const speakText = (text) => {
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.lang = "en-US";
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      toast.error("Speech synthesis failed");
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -59,7 +100,7 @@ const MedicineScanner = () => {
         const base64Image = reader.result.split(",")[1];
 
         try {
-          const res = await axios.post(`${baseUrl}/api/gemini/medication/ask`, {
+          const res = await axios.post(API_ENDPOINTS.GEMINI_ASK, {
             prompt: `Analyze this medicine/pill image and provide detailed information in the following format:
 
 Medicine Name: [Name of the medicine if identifiable]
@@ -79,18 +120,38 @@ Image Data: data:image/jpeg;base64,${base64Image}`,
             pid: patientId,
           });
 
-          // Parse and clean the response
+          // Parse and clean the response - Enhanced cleaning
           let cleanedResponse =
             res.data.aiResponse || "Unable to analyze the image.";
 
+          // Remove all markdown formatting characters
           cleanedResponse = cleanedResponse
+            // Remove bold (**text** or __text__)
             .replace(/\*\*(.+?)\*\*/g, "$1")
+            .replace(/__(.+?)__/g, "$1")
+            // Remove italic (*text* or _text_)
             .replace(/\*(.+?)\*/g, "$1")
             .replace(/_(.+?)_/g, "$1")
+            // Remove code blocks (```code```)
             .replace(/```[\s\S]*?```/g, (match) => match.replace(/```/g, ""))
+            // Remove inline code (`code`)
             .replace(/`(.+?)`/g, "$1")
+            // Remove strikethrough (~~text~~)
             .replace(/~~(.+?)~~/g, "$1")
+            // Remove headers (# ## ### etc)
             .replace(/^#{1,6}\s+/gm, "")
+            // Remove horizontal rules (---, ___, ***)
+            .replace(/^[-_*]{3,}$/gm, "")
+            // Remove blockquotes (>)
+            .replace(/^>\s+/gm, "")
+            // Remove extra asterisks and special chars
+            .replace(/\*+/g, "")
+            .replace(/`+/g, "")
+            .replace(/\.{3,}/g, "...")
+            // Clean up multiple spaces
+            .replace(/\s{2,}/g, " ")
+            // Clean up multiple newlines (max 2)
+            .replace(/\n{3,}/g, "\n\n")
             .trim();
 
           setAnalysis(cleanedResponse);
@@ -260,10 +321,31 @@ Image Data: data:image/jpeg;base64,${base64Image}`,
             className="bg-white dark:bg-[#171717] border border-gray-200 dark:border-gray-800 
                        rounded-2xl shadow-lg overflow-hidden"
           >
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4">
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-6 py-4 flex justify-between items-center">
               <h3 className="text-xl md:text-2xl font-bold text-white flex items-center gap-3">
                 <span>📋</span> Analysis Results
               </h3>
+              <button
+                onClick={isSpeaking ? stopSpeaking : () => speakText(analysis)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all text-sm ${
+                  isSpeaking
+                    ? "bg-red-500 hover:bg-red-600 text-white animate-pulse"
+                    : "bg-white hover:bg-gray-100 text-blue-600"
+                }`}
+                title={isSpeaking ? "Stop reading" : "Read aloud"}
+              >
+                {isSpeaking ? (
+                  <>
+                    <FaVolumeMute className="text-base" />
+                    <span className="hidden sm:inline">Stop</span>
+                  </>
+                ) : (
+                  <>
+                    <FaVolumeUp className="text-base" />
+                    <span className="hidden sm:inline">Read</span>
+                  </>
+                )}
+              </button>
             </div>
 
             <div className="p-6 md:p-8">

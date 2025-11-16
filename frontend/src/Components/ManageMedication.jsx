@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaEdit, FaSave, FaPlusCircle, FaTrash } from "react-icons/fa";
-import { baseUrl } from "../config";
+import { API_ENDPOINTS } from "../api";
 import { motion } from "framer-motion";
 import Modal from "./Modal";
 import Loader from "./Loader";
@@ -27,9 +27,7 @@ const ManageMedication = () => {
   const fetchMedications = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${baseUrl}/medications/get/patient/${patientId}`
-      );
+      const res = await axios.get(API_ENDPOINTS.MEDICATIONS_GET(patientId));
       setMedications(res.data);
     } catch (err) {
       toast.error(
@@ -50,7 +48,7 @@ const ManageMedication = () => {
     }
     setLoading(true);
     try {
-      await axios.post(`${baseUrl}/medications/add/${patientId}`, {
+      await axios.post(API_ENDPOINTS.MEDICATIONS_ADD(patientId), {
         ...form,
         timing: form.timing.join(", "),
         tabletConsumed: 0,
@@ -68,7 +66,7 @@ const ManageMedication = () => {
   const handleUpdate = async () => {
     setLoading(true);
     try {
-      await axios.put(`${baseUrl}/medications/update/${editingId}`, {
+      await axios.put(API_ENDPOINTS.MEDICATIONS_UPDATE(editingId), {
         ...form,
         timing: form.timing.join(", "),
       });
@@ -85,7 +83,7 @@ const ManageMedication = () => {
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await axios.delete(`${baseUrl}/medications/delete/${deleteModal.id}`);
+      await axios.delete(API_ENDPOINTS.MEDICATIONS_DELETE(deleteModal.id));
       toast.success("Medication deleted successfully!");
       setDeleteModal({ isOpen: false, id: null });
       fetchMedications();
