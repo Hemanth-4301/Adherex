@@ -19,7 +19,7 @@ export const API_ENDPOINTS = {
   MEDICATIONS_DELETE: (id) => `${API_BASE_URL}/medications/delete/${id}`,
 
   // Consumed routes
-  CONSUMED_GET: (pid) => `${API_BASE_URL}/consumed/get/patient/${pid}`,
+  CONSUMED_GET: (pid) => `${API_BASE_URL}/consumed/bypatient/${pid}`,
   CONSUMED_ADD: `${API_BASE_URL}/consumed/add`,
   CONSUMED_DELETE: (id) => `${API_BASE_URL}/consumed/delete/${id}`,
 
