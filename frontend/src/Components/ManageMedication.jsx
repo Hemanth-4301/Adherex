@@ -328,7 +328,9 @@ const ManageMedication = () => {
                           className="p-2 xl:p-2.5 text-red-600 dark:text-red-400 
                                        hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg 
                                        transition-colors"
-                          onClick={() => handleDelete(med._id)}
+                          onClick={() =>
+                            setDeleteModal({ isOpen: true, id: med._id })
+                          }
                         >
                           <FaTrash className="text-lg xl:text-xl" />
                         </button>
