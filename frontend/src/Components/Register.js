@@ -3,7 +3,10 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { baseUrl } from "../config";
 import bgImage from "../Assets/home123.jpg";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import ThemeToggle from "./ThemeToggle";
+import { toast } from "react-toastify";
+import { motion } from "framer-motion";
+import Loader from "./Loader";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -15,7 +18,7 @@ const Register = () => {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoaded(true), 200); // fade-in delay
+    const timer = setTimeout(() => setLoaded(true), 200);
     return () => clearTimeout(timer);
   }, []);
 
@@ -23,184 +26,162 @@ const Register = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(`${baseUrl}/register`, {
+      await axios.post(`${baseUrl}/register`, {
         name,
         email,
         password,
         careTakerEmail,
       });
-      console.log("Registration success:", response.data);
-      alert("Registration successful!");
-      navigate("/login"); // Redirect to login after registration
+      toast.success("Registration successful! Please login.", {
+        position: "top-center",
+        autoClose: 2000,
+      });
+      setTimeout(() => navigate("/login"), 2200);
     } catch (error) {
-      console.error("Registration failed:", error.response?.data || error.message);
-      alert("Registration failed. Please try again.");
+      console.error(
+        "Registration failed:",
+        error.response?.data || error.message
+      );
+      toast.error("Registration failed. Please try again.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        filter: "blur(5%)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Dark overlay */}
+    <div className="relative flex items-center justify-center min-h-screen overflow-hidden py-8">
       <div
-        className="position-absolute top-0 start-0 w-100 h-100"
-        style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
-      ></div>
-
-      {/* Glass card */}
-      <div
-        className="p-3 p-sm-4 text-white"
-        style={{
-          backdropFilter: "blur(15px)",
-          background: "rgba(255,255,255,0.1)",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-          borderRadius: "20px",
-          width: "90%",
-          maxWidth: "450px",
-          transform: loaded ? "translateY(0)" : "translateY(-50px)",
-          opacity: loaded ? 1 : 0,
-          transition: "all 1s ease",
-        }}
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      />
+      <div className="absolute inset-0 bg-black/60 dark:bg-black/75"></div>
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        className="relative z-10 p-8 bg-white/10 dark:bg-black/30 backdrop-blur-xl
+                   border border-white/20 shadow-2xl rounded-2xl w-[90%] max-w-md"
       >
-        <h3 className="text-center mb-4 fw-bold" style={{ textShadow: "2px 2px 10px rgba(0,0,0,0.7)" }}>
+        <motion.h3
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-center mb-6 font-bold text-3xl sm:text-4xl text-white"
+        >
           Register
-        </h3>
-        <form onSubmit={handleRegister}>
-          <div className="mb-3">
-            <label className="form-label">Name</label>
+        </motion.h3>
+        <form onSubmit={handleRegister} className="space-y-4">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-gray-100">
+              Name
+            </label>
             <input
               type="text"
-              className="form-control"
+              className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white 
+                                         border border-white/30 rounded-lg focus:outline-none 
+                                         focus:ring-2 focus:ring-white/50 placeholder:text-gray-300"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
               placeholder="Enter your name"
             />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Email</label>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-gray-100">
+              Email
+            </label>
             <input
               type="email"
-              className="form-control"
+              className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white 
+                                         border border-white/30 rounded-lg focus:outline-none 
+                                         focus:ring-2 focus:ring-white/50 placeholder:text-gray-300"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="Enter your email"
             />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Password</label>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-gray-100">
+              Password
+            </label>
             <input
               type="password"
-              className="form-control"
+              className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white 
+                                         border border-white/30 rounded-lg focus:outline-none 
+                                         focus:ring-2 focus:ring-white/50 placeholder:text-gray-300"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="Enter your password"
             />
-          </div>
-          <div className="mb-3">
-            <label className="form-label">Care Taker Email</label>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.6 }}
+          >
+            <label className="block mb-2 text-sm font-medium text-gray-100">
+              Care Taker Email
+            </label>
             <input
               type="email"
-              className="form-control"
+              className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm text-white 
+                                         border border-white/30 rounded-lg focus:outline-none 
+                                         focus:ring-2 focus:ring-white/50 placeholder:text-gray-300"
               value={careTakerEmail}
               onChange={(e) => setCareTakerEmail(e.target.value)}
               required
               placeholder="Enter care taker email"
             />
-          </div>
-
-          <button
-  type="submit"
-  className="btn w-100 fw-bold d-flex justify-content-center align-items-center"
-  style={{
-    background: "linear-gradient(90deg, #6a11cb, #2575fc)",
-    border: "none",
-    color: "#fff",
-    fontSize: "1.1rem",
-    transition: "all 0.4s ease",
-    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-    height: "45px"
-  }}
-  disabled={loading}
-  onMouseEnter={(e) => {
-    if (!loading) {
-      e.target.style.transform = "scale(1.05)";
-      e.target.style.boxShadow = "0 6px 25px rgba(0,0,0,0.5)";
-    }
-  }}
-  onMouseLeave={(e) => {
-    if (!loading) {
-      e.target.style.transform = "scale(1)";
-      e.target.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
-    }
-  }}
->
-  {loading ? (
-    <>
-      <div
-        className="spinner-border spinner-border-sm text-light me-2"
-        role="status"
-      >
-        <span className="visually-hidden">Loading...</span>
-      </div>
-      Registering...
-    </>
-  ) : (
-    "Register"
-  )}
-</button>
-
+          </motion.div>
+          <motion.button
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="submit"
+            className="w-full flex items-center justify-center h-12 mt-6 bg-white hover:bg-gray-100
+                     text-black font-semibold rounded-lg transition-colors"
+            disabled={loading}
+          >
+            {loading ? <Loader size="sm" text="" /> : "Register"}
+          </motion.button>
         </form>
-
-        <p className="mt-3 text-center">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.8 }}
+          className="mt-6 text-center text-sm text-gray-200"
+        >
           Already have an account?{" "}
           <span
-            className="text-primary"
-            style={{ cursor: "pointer", textDecoration: "underline" }}
+            className="text-white font-semibold cursor-pointer hover:underline transition-all"
             onClick={() => navigate("/login")}
           >
             Login
           </span>
-        </p>
-      </div>
-
-      {/* Optional sparkles */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px)",
-          backgroundSize: "50px 50px",
-          animation: "moveBg 60s linear infinite",
-        }}
-      ></div>
-
-      <style>
-        {`
-          @keyframes moveBg {
-            0% { background-position: 0 0; }
-            100% { background-position: 1000px 1000px; }
-          }
-        `}
-      </style>
+        </motion.p>
+      </motion.div>
     </div>
   );
 };

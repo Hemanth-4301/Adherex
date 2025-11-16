@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, Link } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { 
-  FaPills, FaChartLine, FaCheckCircle, FaUser, FaBrain, FaBell, FaSignOutAlt, FaBars, FaTimes 
+import {
+  FaPills,
+  FaChartLine,
+  FaCheckCircle,
+  FaUser,
+  FaBrain,
+  FaBell,
+  FaSignOutAlt,
+  FaBars,
+  FaTimes,
+  FaCamera,
 } from "react-icons/fa";
 import axios from "axios";
 import { toast } from "react-toastify";
+import ThemeToggle from "./ThemeToggle";
 
 const UserDashBoard = () => {
   const navigate = useNavigate();
@@ -17,64 +26,35 @@ const UserDashBoard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Check authentication from localStorage
     const authDataStr = localStorage.getItem("adherex_auth");
-    
     if (authDataStr) {
       try {
         const authData = JSON.parse(authDataStr);
-        
-        // Check if auth has expired (2 days)
         if (Date.now() > authData.expiresAt) {
-          // Auth expired, clear and redirect to login
           localStorage.clear();
           navigate("/");
           return;
         }
-        
-        // Valid auth data, set state
         setName(authData.name);
         setRole(authData.role);
         setPid(authData.pid);
       } catch (err) {
-        console.error('Error parsing auth data:', err);
+        console.error("Error parsing auth data:", err);
         localStorage.clear();
         navigate("/");
-        return;
       }
     } else {
-      // Fallback to old individual localStorage items
       const storedName = localStorage.getItem("name");
-      const storedRole = localStorage.getItem("role");
       const storedPid = localStorage.getItem("pid");
-
       if (!storedName || !storedPid) {
         navigate("/");
         return;
       }
-
       setName(storedName);
-      setRole(storedRole);
+      setRole(localStorage.getItem("role"));
       setPid(storedPid);
-      fetchAlertStatus(storedPid, storedRole);
     }
   }, [navigate]);
-
-  const fetchAlertStatus = async (id, userRole) => {
-    try {
-      const response = await axios.get(`https://adherex-sm-api.onrender.com/getById/${id}`);
-      if (response.status === 200) {
-        const alertValue = response.data.alert;
-        setAlertStatus(alertValue);
-        sessionStorage.setItem("alert", alertValue.toString());
-        if (userRole === "caretaker" && alertValue) {
-          setShowAlertModal(true);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching alert status:", error);
-    }
-  };
 
   const handleLogout = () => {
     localStorage.clear();
@@ -84,275 +64,182 @@ const UserDashBoard = () => {
   const handleAlert = async () => {
     if (!pid) return;
     try {
-      const response = await axios.put(`https://adherex-sm-api.onrender.com/setAlert/${pid}`);
-      if (response.status === 200) {
-        setAlertStatus(true);
-        localStorage.setItem("alert", "true");
-        toast.success("Alert sent successfully!");
-      }
+      await axios.put(`https://adherex-sm-api.onrender.com/setAlert/${pid}`);
+      setAlertStatus(true);
+      toast.success("Alert sent successfully!");
     } catch (error) {
       console.error(error);
-      toast.error("❌ Failed to send alert!");
+      toast.error("Failed to send alert!");
     }
   };
 
   const handleClearAlert = async () => {
     if (!pid) return;
     try {
-      const response = await axios.put(`https://adherex-sm-api.onrender.com/clearAlert/${pid}`);
-      if (response.status === 200) {
-        setAlertStatus(false);
-        setShowAlertModal(false);
-        sessionStorage.setItem("alert", "false");
-        toast.success("Alert cleared successfully!");
-      }
+      await axios.put(`https://adherex-sm-api.onrender.com/clearAlert/${pid}`);
+      setAlertStatus(false);
+      setShowAlertModal(false);
+      toast.success("Alert cleared successfully!");
     } catch (error) {
       console.error(error);
-      toast.error("❌ Failed to clear alert!");
+      toast.error("Failed to clear alert!");
     }
   };
 
   return (
-    <div className="d-flex" style={{ minHeight: "100vh", backgroundColor: "#f8f9fa", position: "relative" }}>
-
-      {/* Mobile Header with Hamburger */}
-      <div className="d-md-none position-fixed w-100 bg-dark text-white d-flex justify-content-between align-items-center" 
-        style={{ 
-          zIndex: 1030, 
-          top: 0,
-          padding: '0.75rem 1rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
-        }}>
-        <h5 className="mb-0 fw-bold" style={{ fontSize: 'clamp(1rem, 4vw, 1.25rem)' }}>💊 Adherex</h5>
-        <button 
-          className="btn btn-link text-white border-0 p-2" 
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{ fontSize: "1.5rem", lineHeight: 1 }}
-          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-        >
-          {sidebarOpen ? <FaTimes /> : <FaBars />}
-        </button>
+    <div className="flex min-h-screen bg-gray-50 dark:bg-[#0a0a0a] relative transition-colors duration-300">
+      <div
+        className="md:hidden fixed w-full bg-white dark:bg-[#171717] text-black dark:text-white 
+                      flex justify-between items-center z-[1030] top-0 px-4 py-3 shadow-md border-b border-gray-200 dark:border-gray-800"
+      >
+        <div className="flex items-center gap-3">
+          <h5 className="font-bold text-lg md:text-xl">💊 Adherex</h5>
+        </div>
+        <div className="flex items-center gap-3">
+          <ThemeToggle className="w-10 h-10" />
+          <button
+            className="text-2xl p-2 focus:outline-none"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {sidebarOpen ? <FaTimes /> : <FaBars />}
+          </button>
+        </div>
       </div>
-
-      {/* Overlay for mobile */}
       {sidebarOpen && (
-        <div 
-          className="d-md-none position-fixed w-100 h-100 bg-dark" 
-          style={{ opacity: 0.5, zIndex: 1039, top: 0, left: 0 }}
+        <div
+          className="md:hidden fixed inset-0 bg-black/50 z-[1039]"
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}
-
-      {/* Vertical Sidebar */}
-      <div 
-        className={`bg-dark text-white d-flex flex-column p-3 ${sidebarOpen ? 'sidebar-open' : ''}`}
-        style={{ 
-          width: "clamp(200px, 18vw, 280px)",
-          minWidth: "200px",
-          maxWidth: "280px",
-          position: "fixed",
-          height: "100vh",
-          overflowY: "auto",
-          zIndex: 1040,
-          transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
-          transition: "transform 0.3s ease-in-out",
-          paddingTop: "env(safe-area-inset-top, 1rem)",
-        }}
+      <div
+        className={`fixed h-screen bg-white dark:bg-[#171717] text-black dark:text-white 
+                      flex flex-col p-4 z-[1040] transition-transform duration-300 ease-in-out
+                      w-64 md:w-72 border-r border-gray-200 dark:border-gray-800
+                      ${
+                        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+                      } md:translate-x-0`}
       >
-        <h3 className="mb-4 text-center fw-bold d-none d-md-block" style={{ fontSize: 'clamp(1.25rem, 2vw, 1.5rem)' }}>💊 Adherex</h3>
-        
-        {/* Mobile: Title in sidebar */}
-        <div className="d-md-none mb-3">
-          <h4 className="text-center fw-bold mb-0" style={{ fontSize: 'clamp(1.1rem, 4vw, 1.3rem)' }}>💊 Menu</h4>
+        <div className="hidden md:flex items-center justify-between mb-6">
+          <h3 className="font-bold text-xl lg:text-2xl">💊 Adherex</h3>
+          <ThemeToggle className="w-10 h-10" />
         </div>
-
-       <ul className="nav flex-column text-start" style={{ flex: 1 }}>
-  <li className="nav-item mb-2">
-    <Link 
-      to="/userDashboard/manageMedication" 
-      className="nav-link text-white d-flex align-items-center"
-      onClick={() => setSidebarOpen(false)}
-      style={{ 
-        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-        borderRadius: '8px',
-        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
-        transition: 'background 0.2s'
-      }}
-      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-      onMouseLeave={(e) => e.target.style.background = 'transparent'}
-    >
-      <FaPills className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
-      <span>Manage Medication</span>
-    </Link>
-  </li>
-  <li className="nav-item mb-2">
-    <Link 
-      to="/userDashboard/consumedChart" 
-      className="nav-link text-white d-flex align-items-center"
-      onClick={() => setSidebarOpen(false)}
-      style={{ 
-        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-        borderRadius: '8px',
-        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
-        transition: 'background 0.2s'
-      }}
-      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-      onMouseLeave={(e) => e.target.style.background = 'transparent'}
-    >
-      <FaChartLine className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
-      <span>Consumed Chart</span>
-    </Link>
-  </li>
-  <li className="nav-item mb-2">
-    <Link 
-      to="/userDashboard/consumedCount" 
-      className="nav-link text-white d-flex align-items-center"
-      onClick={() => setSidebarOpen(false)}
-      style={{ 
-        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-        borderRadius: '8px',
-        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
-        transition: 'background 0.2s'
-      }}
-      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-      onMouseLeave={(e) => e.target.style.background = 'transparent'}
-    >
-      <FaCheckCircle className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
-      <span>Consumed Count</span>
-    </Link>
-  </li>
-  <li className="nav-item mb-2">
-    <Link 
-      to="/userDashboard/mentalSupport" 
-      className="nav-link text-white d-flex align-items-center"
-      onClick={() => setSidebarOpen(false)}
-      style={{ 
-        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-        borderRadius: '8px',
-        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
-        transition: 'background 0.2s'
-      }}
-      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-      onMouseLeave={(e) => e.target.style.background = 'transparent'}
-    >
-      <FaBrain className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
-      <span>AI Mental Support</span>
-    </Link>
-  </li>
-  <li className="nav-item mb-2">
-    <Link 
-      to="/userDashboard/profile" 
-      className="nav-link text-white d-flex align-items-center"
-      onClick={() => setSidebarOpen(false)}
-      style={{ 
-        padding: 'clamp(0.5rem, 1.5vw, 0.75rem) clamp(0.75rem, 2vw, 1rem)',
-        borderRadius: '8px',
-        fontSize: 'clamp(0.9rem, 1.8vw, 1rem)',
-        transition: 'background 0.2s'
-      }}
-      onMouseEnter={(e) => e.target.style.background = 'rgba(255,255,255,0.1)'}
-      onMouseLeave={(e) => e.target.style.background = 'transparent'}
-    >
-      <FaUser className="me-2" style={{ fontSize: 'clamp(1rem, 2vw, 1.2rem)' }} /> 
-      <span>Profile</span>
-    </Link>
-  </li>
+        <div className="md:hidden mb-6 flex items-center justify-between">
+          <h4 className="font-bold text-lg">Menu</h4>
+          <ThemeToggle className="w-10 h-10" />
+        </div>
+        <nav className="flex-1 flex flex-col space-y-2">
+          <Link
+            to="/userDashboard/manageMedication"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800 
+                       text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaPills className="text-lg" />
+            <span>Manage Medication</span>
+          </Link>
+          <Link
+            to="/userDashboard/consumedChart"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800 
+                       text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaChartLine className="text-lg" />
+            <span>Consumed Chart</span>
+          </Link>
+          <Link
+            to="/userDashboard/consumedCount"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800 
+                       text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaCheckCircle className="text-lg" />
+            <span>Consumed Count</span>
+          </Link>
+          <Link
+            to="/userDashboard/mentalSupport"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800 
+                       text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaBrain className="text-lg" />
+            <span>AI Mental Support</span>
+          </Link>
+          <Link
+            to="/userDashboard/medicineScanner"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800 
+                       text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaCamera className="text-lg" />
+            <span>Medicine Scanner</span>
+          </Link>
+          <Link
+            to="/userDashboard/profile"
+            className="flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-gray-100 dark:hover:bg-gray-800 
+                       text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaUser className="text-lg" />
+            <span>Profile</span>
+          </Link>
           {role === "patient" && (
-            <li className="nav-item mt-3">
+            <div className="mt-4">
               <button
-                className={`btn ${alertStatus ? "btn-secondary" : "btn-warning"} w-100 fw-bold d-flex align-items-center justify-content-center gap-2`}
+                className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold 
+                                 transition-all ${
+                                   alertStatus
+                                     ? "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+                                     : "bg-yellow-500 hover:bg-yellow-600 text-white hover:scale-105"
+                                 }`}
                 disabled={alertStatus}
                 onClick={handleAlert}
               >
                 <FaBell /> {alertStatus ? "Alert Sent" : "Send Alert"}
               </button>
-            </li>
+            </div>
           )}
-          <li className="nav-item mt-auto">
+          <div className="mt-auto pt-4">
             <button
-              className="btn btn-danger w-100 fw-bold d-flex align-items-center justify-content-center mt-3 gap-2"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg 
+                             bg-red-600 hover:bg-red-700 text-white font-semibold transition-all hover:scale-105"
               onClick={handleLogout}
             >
               <FaSignOutAlt /> Logout
             </button>
-          </li>
-        </ul>
+          </div>
+        </nav>
       </div>
-
-      {/* Main Content */}
-      <div 
-        className="flex-grow-1" 
-        style={{ 
-          backgroundColor: "#ffffff",
-          marginLeft: "0",
-          marginTop: "60px",
-          width: "100%",
-          maxWidth: "100%",
-          padding: "clamp(0.75rem, 2vw, 2rem)",
-          paddingBottom: "env(safe-area-inset-bottom, 1rem)",
-        }}
+      <div
+        className="flex-1 bg-gray-50 dark:bg-[#0a0a0a] pt-16 md:pt-0 md:ml-64 lg:ml-72 
+                   p-4 md:p-6 lg:p-8 min-h-screen transition-colors duration-300"
       >
-        <div style={{ 
-          marginLeft: "0",
-          width: "100%",
-          maxWidth: "100%",
-          overflowX: "hidden"
-        }}>
+        <div className="max-w-7xl mx-auto">
           <Outlet />
         </div>
       </div>
-
-      {/* Responsive styles */}
-      <style>
-        {`
-          @media (min-width: 768px) {
-            .bg-dark.text-white.d-flex.flex-column {
-              transform: translateX(0) !important;
-              position: fixed !important;
-            }
-            
-            .flex-grow-1 {
-              margin-left: clamp(200px, 18vw, 280px) !important;
-              margin-top: 0 !important;
-              width: calc(100% - clamp(200px, 18vw, 280px)) !important;
-            }
-          }
-          
-          @media (min-width: 1200px) {
-            .flex-grow-1 {
-              max-width: calc(100vw - clamp(200px, 18vw, 280px));
-            }
-          }
-          
-          @media (min-width: 1600px) {
-            .flex-grow-1 {
-              padding: 2rem 3rem !important;
-            }
-          }
-          
-          @media (max-width: 767px) {
-            .flex-grow-1 {
-              width: 100% !important;
-              margin-left: 0 !important;
-            }
-          }
-        `}
-      </style>
-
-      {/* Caretaker Alert Modal */}
       {role === "caretaker" && showAlertModal && (
-        <div className="modal show fade" style={{ display: "block", backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content border-warning">
-              <div className="modal-header bg-warning text-dark">
-                <h5 className="modal-title">⚠️ Patient Alert</h5>
-              </div>
-              <div className="modal-body">
-                <p>Your associate patient has triggered an alert! Please contact immediately.</p>
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-success" onClick={handleClearAlert}>Confirm</button>
-              </div>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div
+            className="bg-white dark:bg-[#171717] rounded-2xl shadow-2xl max-w-md w-[90%] 
+                         border-2 border-yellow-500 dark:border-yellow-600 overflow-hidden"
+          >
+            <div className="bg-yellow-500 dark:bg-yellow-600 text-white px-6 py-4">
+              <h5 className="text-xl font-bold">⚠️ Patient Alert</h5>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-800 dark:text-gray-200 text-lg">
+                Your associate patient has triggered an alert! Please contact
+                immediately.
+              </p>
+            </div>
+            <div className="px-6 pb-6 flex justify-end">
+              <button
+                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-semibold 
+                                rounded-lg transition-all hover:scale-105"
+                onClick={handleClearAlert}
+              >
+                Confirm
+              </button>
             </div>
           </div>
         </div>

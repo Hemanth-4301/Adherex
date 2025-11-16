@@ -2,7 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaEdit, FaSave, FaPlusCircle, FaTrash } from "react-icons/fa";
 import { baseUrl } from "../config";
-import "bootstrap/dist/css/bootstrap.min.css";
+import { motion } from "framer-motion";
+import Modal from "./Modal";
+import Loader from "./Loader";
+import { toast } from "react-toastify";
 
 const ManageMedication = () => {
   const [medications, setMedications] = useState([]);
@@ -13,279 +16,412 @@ const ManageMedication = () => {
     doctor: "",
   });
   const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null });
   const patientId = localStorage.getItem("pid");
-  const role = localStorage.getItem("role"); // 🔹 Get user role
 
   useEffect(() => {
-    console.log('ManageMedication - patientId from session:', patientId);
-    console.log('ManageMedication - role from session:', role);
-    if (patientId) {
-      fetchMedications();
-    } else {
-      console.error('No patient ID found in session!');
-    }
+    if (patientId) fetchMedications();
   }, [patientId]);
 
   const fetchMedications = async () => {
+    setLoading(true);
     try {
-      console.log(`Fetching medications for patient: ${patientId}`);
-      console.log(`API URL: ${baseUrl}/medications/get/patient/${patientId}`);
-      const res = await axios.get(`${baseUrl}/medications/get/patient/${patientId}`);
-      console.log('Medications fetched:', res.data);
+      const res = await axios.get(
+        `${baseUrl}/medications/get/patient/${patientId}`
+      );
       setMedications(res.data);
     } catch (err) {
-      console.error("Error fetching medications:", err);
-      console.error("Error response:", err.response?.data);
-      alert(`Failed to fetch medications: ${err.response?.data?.message || err.message}`);
+      toast.error(
+        `Failed to fetch medications: ${
+          err.response?.data?.message || err.message
+        }`
+      );
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleTimingChange = (e) => {
-    const { value, checked } = e.target;
-    setForm((prev) => {
-      let updatedTimings = [...prev.timing];
-      if (checked) updatedTimings.push(value);
-      else updatedTimings = updatedTimings.filter((t) => t !== value);
-      return { ...prev, timing: updatedTimings };
-    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    console.log('Submitting medication form...');
-    console.log('Patient ID:', patientId);
-    console.log('Form data:', form);
-    
     if (!patientId) {
-      alert("Patient not found in session. Please login again.");
+      toast.error("Patient not found in session.");
       return;
     }
-
-    const payload = {
-      ...form,
-      timing: form.timing.join(", "),
-      tabletConsumed: 0,
-    };
-
-    console.log('Payload to send:', payload);
-
+    setLoading(true);
     try {
-      console.log(`Posting to: ${baseUrl}/medications/add/${patientId}`);
-      const response = await axios.post(`${baseUrl}/medications/add/${patientId}`, payload);
-      console.log('Medication added successfully:', response.data);
-      alert("Medication added successfully!");
+      await axios.post(`${baseUrl}/medications/add/${patientId}`, {
+        ...form,
+        timing: form.timing.join(", "),
+        tabletConsumed: 0,
+      });
+      toast.success("Medication added successfully!");
       resetForm();
       fetchMedications();
     } catch (err) {
-      console.error("Error adding medication:", err);
-      console.error("Error response:", err.response?.data);
-      alert(`Failed to add medication: ${err.response?.data?.message || err.message}`);
+      toast.error(`Failed: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const handleEdit = (med) => {
-    console.log('Editing medication:', med);
-    setEditingId(med._id);
-    setForm({
-      tableName: med.tableName,
-      tabletQty: med.tabletQty,
-      timing: med.timing.split(",").map((t) => t.trim()),
-      doctor: med.doctor || "",
-    });
   };
 
   const handleUpdate = async () => {
+    setLoading(true);
     try {
-      const payload = {
+      await axios.put(`${baseUrl}/medications/update/${editingId}`, {
         ...form,
         timing: form.timing.join(", "),
-      };
-      await axios.put(`${baseUrl}/medications/update/${editingId}`, payload);
-      alert("Medication updated successfully!");
+      });
+      toast.success("Medication updated successfully!");
       resetForm();
       fetchMedications();
     } catch (err) {
-      console.error("Error updating medication:", err);
-      alert(`Failed to update medication: ${err.response?.data?.message || err.message}`);
+      toast.error(`Failed: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDelete = async (medicationId) => {
-    console.log('Attempting to delete medication with ID:', medicationId);
-    if (window.confirm("Are you sure you want to delete this medication?")) {
-      try {
-        const response = await axios.delete(`${baseUrl}/medications/delete/${medicationId}`);
-        console.log('Delete response:', response.data);
-        alert("Medication deleted successfully!");
-        fetchMedications();
-      } catch (err) {
-        console.error("Error deleting medication:", err);
-        console.error('Error response:', err.response?.data);
-        alert(`Failed to delete medication: ${err.response?.data?.message || err.message}`);
-      }
+  const handleDelete = async () => {
+    setLoading(true);
+    try {
+      await axios.delete(`${baseUrl}/medications/delete/${deleteModal.id}`);
+      toast.success("Medication deleted successfully!");
+      setDeleteModal({ isOpen: false, id: null });
+      fetchMedications();
+    } catch (err) {
+      toast.error(`Failed: ${err.response?.data?.message || err.message}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   const resetForm = () => {
     setEditingId(null);
-    setForm({
-      tableName: "",
-      tabletQty: "",
-      timing: ["Morning"],
-      doctor: "",
-    });
+    setForm({ tableName: "", tabletQty: "", timing: ["Morning"], doctor: "" });
   };
 
+  if (loading && medications.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader size="lg" text="Loading medications..." />
+      </div>
+    );
+  }
+
   return (
-    <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
-      <h3 className="text-center mb-3 mb-md-4" style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}>Manage Medication</h3>
+    <div className="w-full max-w-7xl mx-auto p-4 md:p-6">
+      <h2
+        className="text-2xl md:text-3xl lg:text-4xl font-bold text-center mb-6 md:mb-8 
+                   text-gray-900 dark:text-white"
+      >
+        Manage Medication
+      </h2>
 
-      {/* Add / Edit Form */}
-      <div className="card shadow-lg p-3 p-sm-4 mb-4 mb-md-5">
-        <h5 className="mb-3" style={{ fontSize: "clamp(1rem, 2.5vw, 1.25rem)" }}>{editingId ? "Edit Medication" : "Add New Medication"}</h5>
-        <form onSubmit={handleSubmit} className="row g-2 g-sm-3">
-          <div className="col-12 col-md-4">
-            <label className="form-label">Tablet Name</label>
-            <input
-              type="text"
-              name="tableName"
-              className="form-control"
-              value={form.tableName}
-              onChange={handleInputChange}
-              required
-            />
+      {/* Add/Edit Form */}
+      <div className="card mb-6 md:mb-8">
+        <h3 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
+          {editingId ? "Edit" : "Add"} Medication
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+            <div>
+              <label className="block text-sm md:text-base font-medium mb-2 text-gray-700 dark:text-gray-300">
+                Tablet Name
+              </label>
+              <input
+                type="text"
+                name="tableName"
+                className="input-field text-sm md:text-base"
+                value={form.tableName}
+                onChange={(e) =>
+                  setForm({ ...form, tableName: e.target.value })
+                }
+                required
+                placeholder="e.g., Aspirin"
+              />
+            </div>
+            <div>
+              <label className="block text-sm md:text-base font-medium mb-2 text-gray-700 dark:text-gray-300">
+                Quantity
+              </label>
+              <input
+                type="number"
+                name="tabletQty"
+                className="input-field text-sm md:text-base"
+                value={form.tabletQty}
+                onChange={(e) =>
+                  setForm({ ...form, tabletQty: e.target.value })
+                }
+                required
+                placeholder="e.g., 2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm md:text-base font-medium mb-2 text-gray-700 dark:text-gray-300">
+                Doctor
+              </label>
+              <input
+                type="text"
+                name="doctor"
+                className="input-field text-sm md:text-base"
+                value={form.doctor}
+                onChange={(e) => setForm({ ...form, doctor: e.target.value })}
+                required
+                placeholder="Dr. Name"
+              />
+            </div>
           </div>
-
-          <div className="col-12 col-md-4">
-            <label className="form-label">Tablet Quantity</label>
-            <input
-              type="number"
-              name="tabletQty"
-              className="form-control"
-              value={form.tabletQty}
-              onChange={handleInputChange}
-              required
-            />
+          <div>
+            <label className="block text-sm md:text-base font-medium mb-3 text-gray-700 dark:text-gray-300">
+              Timing
+            </label>
+            <div className="flex flex-wrap gap-4 md:gap-6">
+              {["Morning", "Afternoon", "Evening"].map((time) => (
+                <label
+                  key={time}
+                  className="flex items-center gap-2 cursor-pointer group"
+                >
+                  <input
+                    type="checkbox"
+                    value={time}
+                    checked={form.timing.includes(time)}
+                    onChange={(e) => {
+                      const t = [...form.timing];
+                      e.target.checked
+                        ? t.push(time)
+                        : t.splice(t.indexOf(time), 1);
+                      setForm({ ...form, timing: t });
+                    }}
+                    className="w-4 h-4 md:w-5 md:h-5 text-black dark:text-white border-gray-300 
+                             dark:border-gray-600 rounded focus:ring-2 focus:ring-black 
+                             dark:focus:ring-white cursor-pointer"
+                  />
+                  <span
+                    className="text-sm md:text-base text-gray-700 dark:text-gray-300 
+                               group-hover:text-black dark:group-hover:text-white transition-colors"
+                  >
+                    {time}
+                  </span>
+                </label>
+              ))}
+            </div>
           </div>
-
-          <div className="col-12 col-md-4">
-            <label className="form-label">Doctor</label>
-            <input
-              type="text"
-              name="doctor"
-              className="form-control"
-              value={form.doctor}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-
-          <div className="col-12">
-            <label className="form-label d-block">Timing</label>
-            {["Morning", "Afternoon", "Evening"].map((time) => (
-              <div className="form-check form-check-inline" key={time}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  value={time}
-                  checked={form.timing.includes(time)}
-                  onChange={handleTimingChange}
-                />
-                <label className="form-check-label">{time}</label>
-              </div>
-            ))}
-          </div>
-
-          <div className="col-12 text-center mt-3">
+          <div className="flex justify-center pt-2">
             {editingId ? (
               <button
                 type="button"
-                className="btn btn-success px-4"
+                className="btn-primary inline-flex items-center gap-2 text-sm md:text-base"
                 onClick={handleUpdate}
               >
-                <FaSave className="me-2" /> Update Medication
+                <FaSave /> Update Medication
               </button>
             ) : (
               <button
                 type="submit"
-                className="btn btn-primary px-4"
+                className="btn-primary inline-flex items-center gap-2 text-sm md:text-base"
               >
-                <FaPlusCircle className="me-2" /> Add Medication
+                <FaPlusCircle /> Add Medication
               </button>
             )}
           </div>
         </form>
       </div>
 
-      {/* Medication Table */}
-      <div className="table-responsive shadow-sm rounded" style={{
-        maxWidth: '100%',
-        overflowX: 'auto'
-      }}>
-        <table className="table table-striped table-bordered table-hover mb-0" style={{
-          minWidth: '800px',
-          fontSize: 'clamp(0.875rem, 1vw, 1rem)'
-        }}>
-          <thead className="table-dark" style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10
-          }}>
-            <tr>
-              <th className="text-nowrap px-3 py-3" style={{ minWidth: '150px' }}>Medication Name</th>
-              <th className="text-nowrap px-3 py-3" style={{ minWidth: '100px' }}>Quantity</th>
-              <th className="text-nowrap px-3 py-3" style={{ minWidth: '150px' }}>Doctor</th>
-              <th className="text-nowrap px-3 py-3" style={{ minWidth: '150px' }}>Timing</th>
-              <th className="text-center text-nowrap px-3 py-3" style={{ minWidth: '120px' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {medications.length > 0 ? (
-              medications.map((med) => (
-                <tr key={med._id}>
-                  <td className="text-nowrap px-3 py-2" style={{ fontWeight: '500' }}>{med.tableName}</td>
-                  <td className="text-center px-3 py-2">{med.tabletQty}</td>
-                  <td className="text-nowrap px-3 py-2">{med.doctor}</td>
-                  <td className="px-3 py-2">
-                    <span className="badge bg-info text-dark" style={{ fontSize: '0.9rem', padding: '0.4rem 0.6rem' }}>
-                      {med.timing}
-                    </span>
-                  </td>
-                  <td className="text-center text-nowrap px-3 py-2">
-                    <button
-                      className="btn btn-outline-primary btn-sm me-2"
-                      onClick={() => handleEdit(med)}
-                      title="Edit"
-                      style={{ padding: '0.4rem 0.8rem' }}
+      {/* Medications Table/Cards */}
+      <div className="card">
+        <h3 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
+          Your Medications
+        </h3>
+
+        {/* Desktop Table View (hidden on mobile) */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead className="bg-gray-100 dark:bg-gray-800">
+              <tr>
+                <th
+                  className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base font-semibold 
+                             text-gray-700 dark:text-gray-300 border-b dark:border-gray-700"
+                >
+                  Tablet Name
+                </th>
+                <th
+                  className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base font-semibold 
+                             text-gray-700 dark:text-gray-300 border-b dark:border-gray-700 text-center"
+                >
+                  Quantity
+                </th>
+                <th
+                  className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base font-semibold 
+                             text-gray-700 dark:text-gray-300 border-b dark:border-gray-700"
+                >
+                  Doctor
+                </th>
+                <th
+                  className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base font-semibold 
+                             text-gray-700 dark:text-gray-300 border-b dark:border-gray-700"
+                >
+                  Timing
+                </th>
+                <th
+                  className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base font-semibold 
+                             text-gray-700 dark:text-gray-300 border-b dark:border-gray-700 text-center"
+                >
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+              {medications.length > 0 ? (
+                medications.map((med) => (
+                  <tr
+                    key={med._id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                  >
+                    <td
+                      className="px-4 xl:px-6 py-3 xl:py-4 font-medium text-sm xl:text-base 
+                               text-gray-900 dark:text-white"
                     >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="btn btn-outline-danger btn-sm"
-                      onClick={() => handleDelete(med._id)}
-                      title="Delete"
-                      style={{ padding: '0.4rem 0.8rem' }}
+                      {med.tableName}
+                    </td>
+                    <td
+                      className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base text-gray-700 
+                               dark:text-gray-300 text-center font-semibold"
                     >
-                      <FaTrash />
-                    </button>
+                      {med.tabletQty}
+                    </td>
+                    <td
+                      className="px-4 xl:px-6 py-3 xl:py-4 text-sm xl:text-base text-gray-700 
+                               dark:text-gray-300"
+                    >
+                      {med.doctor}
+                    </td>
+                    <td className="px-4 xl:px-6 py-3 xl:py-4">
+                      <span
+                        className="inline-block px-3 py-1 text-xs xl:text-sm font-medium 
+                                   bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 
+                                   rounded-full"
+                      >
+                        {med.timing}
+                      </span>
+                    </td>
+                    <td className="px-4 xl:px-6 py-3 xl:py-4 text-center">
+                      <div className="flex items-center justify-center gap-2 xl:gap-3">
+                        <button
+                          className="p-2 xl:p-2.5 text-blue-600 dark:text-blue-400 
+                                       hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg 
+                                       transition-colors"
+                          onClick={() => {
+                            setEditingId(med._id);
+                            setForm({
+                              tableName: med.tableName,
+                              tabletQty: med.tabletQty,
+                              timing: med.timing
+                                .split(",")
+                                .map((t) => t.trim()),
+                              doctor: med.doctor || "",
+                            });
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                        >
+                          <FaEdit className="text-lg xl:text-xl" />
+                        </button>
+                        <button
+                          className="p-2 xl:p-2.5 text-red-600 dark:text-red-400 
+                                       hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg 
+                                       transition-colors"
+                          onClick={() => handleDelete(med._id)}
+                        >
+                          <FaTrash className="text-lg xl:text-xl" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-4 py-12 text-center text-gray-500 dark:text-gray-400 
+                                           text-sm md:text-base"
+                  >
+                    No medications found. Add your first medication above.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="text-center text-muted py-4" style={{ fontSize: '1rem' }}>
-                  No medications found. Add your first medication above.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile/Tablet Card View (shown on small screens) */}
+        <div className="lg:hidden space-y-4">
+          {medications.length > 0 ? (
+            medications.map((med) => (
+              <div
+                key={med._id}
+                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 border 
+                                        border-gray-200 dark:border-gray-700 space-y-3"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                      {med.tableName}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Dr. {med.doctor}
+                    </p>
+                  </div>
+                  <span className="text-2xl font-bold text-gray-900 dark:text-white">
+                    {med.tabletQty}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span
+                    className="inline-block px-3 py-1 text-sm font-medium bg-blue-100 
+                               dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full"
+                  >
+                    {med.timing}
+                  </span>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
+                                 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 
+                                 rounded-lg font-medium transition-colors hover:bg-blue-100 
+                                 dark:hover:bg-blue-900/50"
+                    onClick={() => {
+                      setEditingId(med._id);
+                      setForm({
+                        tableName: med.tableName,
+                        tabletQty: med.tabletQty,
+                        timing: med.timing.split(",").map((t) => t.trim()),
+                        doctor: med.doctor || "",
+                      });
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                  >
+                    <FaEdit /> Edit
+                  </button>
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
+                                 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 
+                                 rounded-lg font-medium transition-colors hover:bg-red-100 
+                                 dark:hover:bg-red-900/50"
+                    onClick={() => handleDelete(med._id)}
+                  >
+                    <FaTrash /> Delete
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              No medications found. Add your first medication above.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

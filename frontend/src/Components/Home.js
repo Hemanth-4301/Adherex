@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import homeBg from "../Assets/home123.jpg";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import ThemeToggle from "./ThemeToggle";
+import { motion } from "framer-motion";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -22,11 +23,11 @@ const Home = () => {
           localStorage.clear();
         }
       } catch (err) {
-        console.error('Error checking auth:', err);
+        console.error("Error checking auth:", err);
         localStorage.clear();
       }
     }
-    
+
     const timer = setTimeout(() => setLoaded(true), 200); // fade-in delay
     return () => clearTimeout(timer);
   }, [navigate]);
@@ -36,81 +37,68 @@ const Home = () => {
   };
 
   return (
-    <div
-      className="d-flex justify-content-center align-items-center vh-100"
-      style={{
-        backgroundImage: `url(${homeBg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        filter: "blur(5%)",
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      {/* Dark overlay */}
+    <div className="relative flex items-center justify-center min-h-screen overflow-hidden">
+      {/* Background image - always visible */}
       <div
-        className="position-absolute top-0 start-0 w-100 h-100"
-        style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
-      ></div>
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: `url(${homeBg})` }}
+      />
 
-      {/* Glass card with animation */}
-      <div
-        className={`text-center text-white p-3 p-sm-4 p-md-5 rounded`}
-        style={{
-          backdropFilter: "blur(15px)",
-          background: "rgba(255, 255, 255, 0.1)",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.5)",
-          borderRadius: "20px",
-          transform: loaded ? "translateY(0)" : "translateY(-50px)",
-          opacity: loaded ? 1 : 0,
-          transition: "all 1s ease",
-          maxWidth: "90%",
-          width: "auto",
-        }}
-      >
-        <h1
-          className="mb-3 mb-md-4 fw-bold"
-          style={{
-            fontSize: "clamp(2.5rem, 8vw, 5rem)",
-            textShadow: "2px 2px 10px rgba(0,0,0,0.7)",
-            animation: loaded ? "fadeIn 1.5s ease forwards" : "none",
-          }}
-        >
-        Adherex
-        </h1>
-        <button
-          className="btn btn-gradient btn-lg px-3 px-sm-4 px-md-5 py-2 py-md-3 fw-bold"
-          onClick={handleStart}
-          style={{
-            background: "linear-gradient(90deg, #6a11cb, #2575fc)",
-            border: "none",
-            color: "#fff",
-            fontSize: "clamp(1rem, 2.5vw, 1.2rem)",
-            transition: "all 0.4s ease",
-            boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.transform = "scale(1.1)";
-            e.target.style.boxShadow = "0 6px 25px rgba(0,0,0,0.5)";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.transform = "scale(1)";
-            e.target.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
-          }}
-        >
-          Let Start
-        </button>
+      {/* Dark overlay */}
+      <div className="absolute inset-0 bg-black/60 dark:bg-black/75"></div>
+
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
       </div>
+
+      {/* Main content card */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="relative z-10 text-center p-8 sm:p-12 md:p-16 rounded-2xl 
+                   bg-white/10 dark:bg-black/30 backdrop-blur-xl border border-white/20 
+                   shadow-2xl max-w-2xl mx-4"
+      >
+        <motion.h1
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="mb-4 font-bold text-6xl sm:text-7xl md:text-8xl text-white"
+        >
+          Adherex
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="mb-8 text-lg md:text-xl text-gray-100 max-w-lg mx-auto"
+        >
+          Your intelligent medication adherence companion
+        </motion.p>
+
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7, duration: 0.6 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="px-12 md:px-16 py-4 font-semibold text-lg 
+                     bg-white text-black rounded-lg 
+                     transition-all duration-200 hover:bg-gray-100
+                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+          onClick={handleStart}
+        >
+          Get Started
+        </motion.button>
+      </motion.div>
 
       {/* Optional subtle floating sparkles */}
       <div
+        className="absolute inset-0 pointer-events-none opacity-30"
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
           backgroundImage:
             "radial-gradient(circle, rgba(255,255,255,0.3) 1px, transparent 1px)",
           backgroundSize: "50px 50px",
@@ -123,10 +111,6 @@ const Home = () => {
           @keyframes moveBg {
             0% { background-position: 0 0; }
             100% { background-position: 1000px 1000px; }
-          }
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-20px);}
-            to { opacity: 1; transform: translateY(0);}
           }
         `}
       </style>
