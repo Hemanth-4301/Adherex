@@ -19,6 +19,9 @@ const ManageMedication = () => {
   const [loading, setLoading] = useState(false);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null });
   const patientId = localStorage.getItem("pid");
+  const userRole = localStorage.getItem("role"); // Get user role
+  const isCaretaker = userRole === "caretaker";
+  const isPatient = userRole === "patient";
 
   useEffect(() => {
     if (patientId) fetchMedications();
@@ -42,6 +45,10 @@ const ManageMedication = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isCaretaker) {
+      toast.error("Only caretakers can add medications.");
+      return;
+    }
     if (!patientId) {
       toast.error("Patient not found in session.");
       return;
@@ -64,6 +71,10 @@ const ManageMedication = () => {
   };
 
   const handleUpdate = async () => {
+    if (!isCaretaker) {
+      toast.error("Only caretakers can update medications.");
+      return;
+    }
     setLoading(true);
     try {
       await axios.put(API_ENDPOINTS.MEDICATIONS_UPDATE(editingId), {
@@ -81,6 +92,10 @@ const ManageMedication = () => {
   };
 
   const handleDelete = async () => {
+    if (!isCaretaker) {
+      toast.error("Only caretakers can delete medications.");
+      return;
+    }
     setLoading(true);
     try {
       await axios.delete(API_ENDPOINTS.MEDICATIONS_DELETE(deleteModal.id));
@@ -116,8 +131,18 @@ const ManageMedication = () => {
         Manage Medication
       </h2>
 
+      {/* Role Badge */}
+      {isPatient && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl">
+          <p className="text-center text-blue-700 dark:text-blue-300 font-medium">
+            👁️ You are viewing as <span className="font-bold">Patient</span>.
+            Only caretakers can add, edit, or delete medications.
+          </p>
+        </div>
+      )}
+
       {/* Add/Edit Form */}
-      <div className="card mb-6 md:mb-8">
+      <div className={`card mb-6 md:mb-8 ${isPatient ? "opacity-70" : ""}`}>
         <h3 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-gray-800 dark:text-gray-200">
           {editingId ? "Edit" : "Add"} Medication
         </h3>
@@ -137,6 +162,7 @@ const ManageMedication = () => {
                 }
                 required
                 placeholder="e.g., Aspirin"
+                disabled={isPatient}
               />
             </div>
             <div>
@@ -153,6 +179,7 @@ const ManageMedication = () => {
                 }
                 required
                 placeholder="e.g., 2"
+                disabled={isPatient}
               />
             </div>
             <div>
@@ -167,6 +194,7 @@ const ManageMedication = () => {
                 onChange={(e) => setForm({ ...form, doctor: e.target.value })}
                 required
                 placeholder="Dr. Name"
+                disabled={isPatient}
               />
             </div>
           </div>
@@ -178,7 +206,9 @@ const ManageMedication = () => {
               {["Morning", "Afternoon", "Evening"].map((time) => (
                 <label
                   key={time}
-                  className="flex items-center gap-2 cursor-pointer group"
+                  className={`flex items-center gap-2 ${
+                    isPatient ? "cursor-not-allowed" : "cursor-pointer"
+                  } group`}
                 >
                   <input
                     type="checkbox"
@@ -191,9 +221,10 @@ const ManageMedication = () => {
                         : t.splice(t.indexOf(time), 1);
                       setForm({ ...form, timing: t });
                     }}
+                    disabled={isPatient}
                     className="w-4 h-4 md:w-5 md:h-5 text-black dark:text-white border-gray-300 
                              dark:border-gray-600 rounded focus:ring-2 focus:ring-black 
-                             dark:focus:ring-white cursor-pointer"
+                             dark:focus:ring-white cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <span
                     className="text-sm md:text-base text-gray-700 dark:text-gray-300 
@@ -209,15 +240,17 @@ const ManageMedication = () => {
             {editingId ? (
               <button
                 type="button"
-                className="btn-primary inline-flex items-center gap-2 text-sm md:text-base"
+                className="btn-primary inline-flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleUpdate}
+                disabled={isPatient}
               >
                 <FaSave /> Update Medication
               </button>
             ) : (
               <button
                 type="submit"
-                className="btn-primary inline-flex items-center gap-2 text-sm md:text-base"
+                className="btn-primary inline-flex items-center gap-2 text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isPatient}
               >
                 <FaPlusCircle /> Add Medication
               </button>
@@ -306,10 +339,15 @@ const ManageMedication = () => {
                     <td className="px-4 xl:px-6 py-3 xl:py-4 text-center">
                       <div className="flex items-center justify-center gap-2 xl:gap-3">
                         <button
-                          className="p-2 xl:p-2.5 text-blue-600 dark:text-blue-400 
+                          className={`p-2 xl:p-2.5 text-blue-600 dark:text-blue-400 
                                        hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg 
-                                       transition-colors"
+                                       transition-colors ${
+                                         isPatient
+                                           ? "opacity-50 cursor-not-allowed"
+                                           : ""
+                                       }`}
                           onClick={() => {
+                            if (isPatient) return;
                             setEditingId(med._id);
                             setForm({
                               tableName: med.tableName,
@@ -321,15 +359,32 @@ const ManageMedication = () => {
                             });
                             window.scrollTo({ top: 0, behavior: "smooth" });
                           }}
+                          disabled={isPatient}
+                          title={
+                            isPatient
+                              ? "Only caretakers can edit"
+                              : "Edit medication"
+                          }
                         >
                           <FaEdit className="text-lg xl:text-xl" />
                         </button>
                         <button
-                          className="p-2 xl:p-2.5 text-red-600 dark:text-red-400 
+                          className={`p-2 xl:p-2.5 text-red-600 dark:text-red-400 
                                        hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg 
-                                       transition-colors"
-                          onClick={() =>
-                            setDeleteModal({ isOpen: true, id: med._id })
+                                       transition-colors ${
+                                         isPatient
+                                           ? "opacity-50 cursor-not-allowed"
+                                           : ""
+                                       }`}
+                          onClick={() => {
+                            if (isPatient) return;
+                            setDeleteModal({ isOpen: true, id: med._id });
+                          }}
+                          disabled={isPatient}
+                          title={
+                            isPatient
+                              ? "Only caretakers can delete"
+                              : "Delete medication"
                           }
                         >
                           <FaTrash className="text-lg xl:text-xl" />
@@ -387,11 +442,16 @@ const ManageMedication = () => {
 
                 <div className="flex gap-2 pt-2">
                   <button
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
                                  text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 
                                  rounded-lg font-medium transition-colors hover:bg-blue-100 
-                                 dark:hover:bg-blue-900/50"
+                                 dark:hover:bg-blue-900/50 ${
+                                   isPatient
+                                     ? "opacity-50 cursor-not-allowed"
+                                     : ""
+                                 }`}
                     onClick={() => {
+                      if (isPatient) return;
                       setEditingId(med._id);
                       setForm({
                         tableName: med.tableName,
@@ -401,17 +461,24 @@ const ManageMedication = () => {
                       });
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
+                    disabled={isPatient}
                   >
                     <FaEdit /> Edit
                   </button>
                   <button
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 
                                  text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 
                                  rounded-lg font-medium transition-colors hover:bg-red-100 
-                                 dark:hover:bg-red-900/50"
-                    onClick={() =>
-                      setDeleteModal({ isOpen: true, id: med._id })
-                    }
+                                 dark:hover:bg-red-900/50 ${
+                                   isPatient
+                                     ? "opacity-50 cursor-not-allowed"
+                                     : ""
+                                 }`}
+                    onClick={() => {
+                      if (isPatient) return;
+                      setDeleteModal({ isOpen: true, id: med._id });
+                    }}
+                    disabled={isPatient}
                   >
                     <FaTrash /> Delete
                   </button>

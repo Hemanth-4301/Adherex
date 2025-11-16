@@ -3,11 +3,14 @@ import axios from "axios";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { API_ENDPOINTS } from "../api";
+import Loader from "./Loader";
 
 const ConsumedCount = () => {
   const [progressData, setProgressData] = useState([]);
   const [medications, setMedications] = useState([]);
   const [consumedData, setConsumedData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const patientId = localStorage.getItem("pid");
 
   useEffect(() => {
@@ -20,6 +23,8 @@ const ConsumedCount = () => {
   }, [patientId]);
 
   const fetchConsumedData = async () => {
+    setLoading(true);
+    setError(null);
     try {
       console.log(
         `Fetching consumed data: ${API_ENDPOINTS.CONSUMED_GET(patientId)}`
@@ -30,7 +35,12 @@ const ConsumedCount = () => {
     } catch (err) {
       console.error("Error fetching data:", err);
       console.error("Error response:", err.response?.data);
+      setError(
+        err.response?.data?.message || "Failed to load consumption data"
+      );
       setProgressData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -77,135 +87,46 @@ const ConsumedCount = () => {
     setProgressData(formatted);
   };
 
-  const renderBadges = (badges) => {
-    const badgeConfig = {
-      brown: {
-        label: "Bronze",
-        color: "#8B4513",
-        textColor: "#fff",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="currentColor"
-            style={{ marginRight: "4px", verticalAlign: "middle" }}
-          >
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V20h2v-2h2v2h2v-4.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.66-.82 3.16-2.09 4.09l-.41.28-.5.13v-2.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v2.5l-.5-.13-.41-.28C7.82 14.16 7 12.66 7 11c0-2.76 2.24-5 5-5z" />
-          </svg>
-        ),
-      },
-      silver: {
-        label: "Silver",
-        color: "#C0C0C0",
-        textColor: "#222",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="currentColor"
-            style={{ marginRight: "4px", verticalAlign: "middle" }}
-          >
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V20h2v-2h2v2h2v-4.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.66-.82 3.16-2.09 4.09l-.41.28-.5.13v-2.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v2.5l-.5-.13-.41-.28C7.82 14.16 7 12.66 7 11c0-2.76 2.24-5 5-5z" />
-          </svg>
-        ),
-      },
-      gold: {
-        label: "Gold",
-        color: "#FFD700",
-        textColor: "#222",
-        icon: (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            width="14"
-            height="14"
-            fill="currentColor"
-            style={{ marginRight: "4px", verticalAlign: "middle" }}
-          >
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 2.38 1.19 4.47 3 5.74V20h2v-2h2v2h2v-4.26c1.81-1.27 3-3.36 3-5.74 0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5 0 1.66-.82 3.16-2.09 4.09l-.41.28-.5.13v-2.5c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v2.5l-.5-.13-.41-.28C7.82 14.16 7 12.66 7 11c0-2.76 2.24-5 5-5z" />
-          </svg>
-        ),
-      },
-    };
-
+  if (loading) {
     return (
-      <div className="d-flex justify-content-center flex-wrap gap-1 mb-2">
-        {badges.map((type, i) => {
-          const config = badgeConfig[type];
-          return (
-            <span
-              key={i}
-              style={{
-                padding: "5px 10px",
-                borderRadius: "20px",
-                backgroundColor: config.color,
-                color: config.textColor,
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.15)",
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minWidth: "72px",
-              }}
-            >
-              {config.icon}
-              {config.label}
-            </span>
-          );
-        })}
+      <div className="flex items-center justify-center min-h-[400px] py-8">
+        <Loader size="lg" text="Loading consumption progress..." />
       </div>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-800 rounded-2xl p-6 text-center">
+          <p className="text-red-600 dark:text-red-400 text-base md:text-lg font-medium">
+            {error}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-2 mt-sm-3 mt-md-4 px-2 px-sm-3">
-      <h3
-        className="text-center mb-3 mb-md-4"
-        style={{ fontSize: "clamp(1.25rem, 4vw, 1.75rem)" }}
-      >
-        Medication Consumption Progress
-      </h3>
+    <div className="container mx-auto px-4 py-6">
+      <div className="mb-6">
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Medication Progress
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Track your medication adherence
+        </p>
+      </div>
 
       {progressData.length > 0 ? (
-        <div className="d-flex flex-wrap justify-content-center gap-3 gap-md-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {progressData.map((item, index) => (
             <div
               key={index}
-              className="text-center p-3 rounded-3"
-              style={{
-                width: "clamp(180px, 45vw, 220px)",
-                minWidth: "180px",
-                background: "#ffffff",
-                border: "1px solid #eee",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                borderRadius: "14px",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.04)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.12)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "scale(1)";
-                e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)";
-              }}
+              className="bg-white dark:bg-[#1a1a1a] rounded-xl p-5 shadow-lg border border-gray-200 dark:border-gray-800 hover:shadow-xl transition-shadow"
             >
-              {/* ✅ Badges with icons at the TOP */}
-              {item.badges.length > 0 && renderBadges(item.badges)}
-
-              {/* Progress Circle */}
-              <div
-                style={{
-                  width: "clamp(90px, 20vw, 110px)",
-                  height: "clamp(90px, 20vw, 110px)",
-                  margin: "0 auto",
-                }}
-              >
+              {/* Circular Progress */}
+              <div className="w-28 h-28 mx-auto mb-4">
                 <CircularProgressbar
                   value={item.percentage}
                   text={`${item.consumed}/${item.total}`}
@@ -213,63 +134,93 @@ const ConsumedCount = () => {
                     textSize: "16px",
                     pathColor:
                       item.percentage >= 80
-                        ? "#28a745"
-                        : item.percentage >= 40
-                        ? "#ffc107"
-                        : "#dc3545",
-                    textColor: "#333",
-                    trailColor: "#f5f5f5",
+                        ? "#10b981"
+                        : item.percentage >= 50
+                        ? "#f59e0b"
+                        : "#ef4444",
+                    textColor: "#6B7280",
+                    trailColor: "#e5e7eb",
+                    pathTransitionDuration: 0.5,
                   })}
                 />
               </div>
 
               {/* Medication Info */}
-              <h6 className="mt-3 fw-bold">{item.name}</h6>
-              <p className="mb-1 text-secondary">
-                <small>{item.timing}</small>
-              </p>
-              <p
-                className="text-muted"
-                style={{
-                  fontSize: "0.9em",
-                  background: "#f8f9fa",
-                  borderRadius: "8px",
-                  display: "inline-block",
-                  padding: "4px 10px",
-                  marginTop: "4px",
-                }}
-              >
-                {item.percentage}% consumed
-              </p>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white text-center mb-2 truncate">
+                {item.name}
+              </h3>
+
+              <div className="flex items-center justify-center mb-3">
+                <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-lg text-sm">
+                  {item.timing}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="mb-2">
+                <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                  <span>Progress</span>
+                  <span className="font-medium">{item.percentage}%</span>
+                </div>
+                <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      item.percentage >= 80
+                        ? "bg-green-500"
+                        : item.percentage >= 50
+                        ? "bg-orange-500"
+                        : "bg-red-500"
+                    }`}
+                    style={{ width: `${item.percentage}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Achievement Badge */}
+              {item.percentage >= 80 && (
+                <div className="flex items-center justify-center mt-3">
+                  <span className="px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                    ✓ Excellent
+                  </span>
+                </div>
+              )}
+              {item.percentage >= 50 && item.percentage < 80 && (
+                <div className="flex items-center justify-center mt-3">
+                  <span className="px-3 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-full text-xs font-medium">
+                    Good
+                  </span>
+                </div>
+              )}
+              {item.percentage < 50 && (
+                <div className="flex items-center justify-center mt-3">
+                  <span className="px-3 py-1 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
+                    Needs Attention
+                  </span>
+                </div>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-center text-muted">No consumption data available.</p>
+        <div className="text-center py-12 bg-white dark:bg-[#1a1a1a] rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            No Data Available
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400">
+            Start tracking your medications to see progress here
+          </p>
+        </div>
       )}
-
-      <style>
-        {`
-          @media (min-width: 1200px) {
-            .container {
-              max-width: 1400px;
-            }
-            
-            /* Show 4 cards per row on large screens */
-            .d-flex.flex-wrap > div {
-              width: calc(25% - 1.5rem) !important;
-              min-width: 200px;
-            }
-          }
-          
-          @media (min-width: 1600px) {
-            /* Show 5 cards per row on extra large screens */
-            .d-flex.flex-wrap > div {
-              width: calc(20% - 1.5rem) !important;
-            }
-          }
-        `}
-      </style>
     </div>
   );
 };
