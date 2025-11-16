@@ -311,7 +311,7 @@ const MentalSupport = () => {
           </div>
 
           {/* Messages Container */}
-          <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-[#0a0a0a]/50">
+          <div className="flex-1 overflow-y-auto p-2 sm:p-4 md:p-6 space-y-2 sm:space-y-4 bg-gradient-to-b from-gray-50/50 to-transparent dark:from-[#0a0a0a]/50">
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center h-full text-center px-4 py-8">
                 <div className="relative mb-6">
@@ -351,18 +351,18 @@ const MentalSupport = () => {
             {messages.map((msg, idx) => (
               <div
                 key={idx}
-                className={`flex gap-2 sm:gap-3 ${
+                className={`flex gap-1.5 sm:gap-3 ${
                   msg.role === "user" ? "justify-end" : "justify-start"
                 } animate-fadeIn`}
               >
                 {msg.role === "ai" && (
-                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
-                    <FaRobot className="text-white text-sm sm:text-base" />
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                    <FaRobot className="text-white text-xs sm:text-base" />
                   </div>
                 )}
 
                 <div
-                  className={`group max-w-[85%] sm:max-w-[75%] md:max-w-[65%] rounded-2xl sm:rounded-3xl px-4 py-3 sm:px-5 sm:py-4 shadow-lg
+                  className={`group max-w-[85%] sm:max-w-[75%] md:max-w-[65%] rounded-2xl sm:rounded-3xl px-3 py-2 sm:px-5 sm:py-4 shadow-lg
                             ${
                               msg.role === "user"
                                 ? "bg-gradient-to-br from-purple-600 to-blue-600 text-white"
@@ -370,7 +370,7 @@ const MentalSupport = () => {
                             }`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words flex-1">
+                    <p className="text-sm sm:text-base leading-[1.6] whitespace-pre-wrap break-words flex-1 text-left">
                       {formatMessageText(msg.text)}
                     </p>
                     {msg.role === "ai" && (
@@ -388,8 +388,8 @@ const MentalSupport = () => {
                 </div>
 
                 {msg.role === "user" && (
-                  <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-700 to-gray-900 dark:from-white dark:to-gray-200 rounded-full flex items-center justify-center shadow-lg">
-                    <FaUser className="text-white dark:text-gray-900 text-sm sm:text-base" />
+                  <div className="flex-shrink-0 w-7 h-7 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-700 to-gray-900 dark:from-white dark:to-gray-200 rounded-full flex items-center justify-center shadow-lg">
+                    <FaUser className="text-white dark:text-gray-900 text-xs sm:text-base" />
                   </div>
                 )}
               </div>
